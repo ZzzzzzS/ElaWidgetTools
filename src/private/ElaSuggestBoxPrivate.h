@@ -4,13 +4,14 @@
 #include <QObject>
 #include <QSize>
 #include <QVariantMap>
+#include <QVector>
 
 #include "Def.h"
 #include "stdafx.h"
 class ElaSuggestion : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY_CREATE(ElaIconType, ElaIcon)
+    Q_PROPERTY_CREATE(ElaIconType::IconName, ElaIcon)
     Q_PROPERTY_CREATE(QString, SuggestText)
     Q_PROPERTY_CREATE(QVariantMap, SuggestData)
 public:
@@ -18,6 +19,7 @@ public:
     ~ElaSuggestion();
 };
 
+class QVBoxLayout;
 class ElaLineEdit;
 class ElaNavigationNode;
 class ElaSuggestModel;
@@ -44,6 +46,8 @@ private:
     ElaSuggestModel* _searchModel{nullptr};
     ElaBaseListView* _searchView{nullptr};
     ElaSuggestDelegate* _searchDelegate{nullptr};
+    QVBoxLayout* _shadowLayout{nullptr};
+    QSize _lastSize;
     bool _isExpandAnimationFinished{true};
     bool _isCloseAnimationFinished{true};
     void _startSizeAnimation(QSize oldSize, QSize newSize);

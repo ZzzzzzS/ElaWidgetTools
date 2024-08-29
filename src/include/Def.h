@@ -4,15 +4,39 @@
 
 #include "stdafx.h"
 
-namespace ElaThemeType
-{
-Q_NAMESPACE_EXPORT(ELA_EXPORT)
+//枚举类导出  兼容QT5低版本
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+#define Q_BEGIN_ENUM_CREATE(CLASS) \
+    namespace CLASS                \
+    {                              \
+    Q_NAMESPACE_EXPORT(ELA_EXPORT)
+
+#define Q_END_ENUM_CREATE(CLASS) }
+
+#define Q_ENUM_CREATE(CLASS) Q_ENUM_NS(CLASS)
+#else
+#define Q_BEGIN_ENUM_CREATE(CLASS)          \
+    class ELA_EXPORT CLASS : public QObject \
+    {                                       \
+        Q_OBJECT                            \
+    public:
+
+#define Q_END_ENUM_CREATE(CLASS) \
+private:                         \
+    Q_DISABLE_COPY(CLASS)        \
+    }                            \
+    ;
+
+#define Q_ENUM_CREATE(CLASS) Q_ENUM(CLASS)
+#endif
+
+Q_BEGIN_ENUM_CREATE(ElaThemeType)
 enum ThemeMode
 {
     Light = 0x0000,
     Dark = 0x0001,
 };
-Q_ENUM_NS(ThemeMode)
+Q_ENUM_CREATE(ThemeMode)
 
 enum ThemeColor
 {
@@ -60,6 +84,9 @@ enum ThemeColor
     LineEditHover,
     LineEditHasFocus,
     LineEditHemline,
+    ListViewBase,
+    ListViewAlternatingRow,
+    ListViewBorder,
     ListViewItemHover,
     ListViewItemSelected,
     ListViewItemSelectedHover,
@@ -75,6 +102,7 @@ enum ThemeColor
     MessageButtonBase,
     MessageButtonHover,
     MessageButtonTextPress,
+    MessageButtonDisableBase,
     NavigationBaseStart,
     NavigationBaseEnd,
     NavigationHover,
@@ -86,6 +114,9 @@ enum ThemeColor
     NavigationKeyPointText,
     NavigationMark,
     NavigationFooterBaseLine,
+    PivotText,
+    PivotTextHasFocus,
+    PivotMark,
     PopularCardBorder,
     PopularCardFloaterBorder,
     PopularCardBase,
@@ -104,6 +135,7 @@ enum ThemeColor
     PushButtonDefaultHover,
     PushButtonDefaultPress,
     PushButtonDefaultText,
+    PushButtonDisableBase,
     RadioButtonStateOffBorder,
     RadioButtonStateOffBase,
     RadioButtonStateOffHover,
@@ -115,6 +147,7 @@ enum ThemeColor
     ReminderCardHover,
     ReminderCardMark,
     ReminderCardSubTitleText,
+    ScrollBarBase,
     ScrollBarHandle,
     ScrollPageAreaBorder,
     ScrollPageAreaBase,
@@ -141,6 +174,17 @@ enum ThemeColor
     TabBarTabHover,
     TabBarTabSelected,
     TabBarTabMark,
+    TabBarPanelButtonToolHover,
+    TabBarPanelButtonToolPress,
+    TableViewBase,
+    TableViewHeaderBase,
+    TableViewHeaderHover,
+    TableViewHeaderSelected,
+    TableViewHeaderSelectedHover,
+    TableViewAlternatingRow,
+    TableViewBorder,
+    TableViewItemHover,
+    TableViewItemSelected,
     ToggleButtonNoToggledBorder,
     ToggleButtonNoToggledBase,
     ToggleButtonNoToggledPress,
@@ -152,6 +196,7 @@ enum ThemeColor
     ToggleButtonToggledHover,
     ToggleButtonToggledText,
     ToggleButtonHemline,
+    ToggleButtonDisableBase,
     ToggleSwitchNoToggledBorder,
     ToggleSwitchNoToggledBase,
     ToggleSwitchNoToggledHover,
@@ -159,16 +204,23 @@ enum ThemeColor
     ToggleSwitchToggledBorder,
     ToggleSwitchToggledBase,
     ToggleSwitchToggledCenter,
+    ToggleSwitchDisableBase,
+    ToggleSwitchDisableCenter,
     ToolBarExpandButtonHover,
     ToolBarWindowBorder,
     ToolBarWindowBase,
     ToolBarSeparator,
     ToolBarHandle,
+    ToolButtonBorder,
+    ToolButtonBase,
     ToolButtonHover,
+    ToolButtonTransparentHover,
     ToolButtonPress,
+    ToolButtonTransparentPress,
     ToolButtonIndicator,
     WindowText,
     WindowTextDisable,
+    WindowTextPress,
     WindowBaseStart,
     WindowBaseEnd,
     WindowBaseLine,
@@ -182,12 +234,10 @@ enum ThemeColor
     WindowCentralStackBaseStart,
     WindowCentralStackBaseEnd,
 };
-Q_ENUM_NS(ThemeColor)
-} // namespace ElaThemeType
+Q_ENUM_CREATE(ThemeColor)
+Q_END_ENUM_CREATE(ElaThemeType)
 
-namespace ElaAppBarType
-{
-Q_NAMESPACE_EXPORT(ELA_EXPORT)
+Q_BEGIN_ENUM_CREATE(ElaAppBarType)
 enum ButtonType
 {
     RouteBackButtonHint = 0x0001,
@@ -198,9 +248,8 @@ enum ButtonType
     MaximizeButtonHint = 0x0020,
     CloseButtonHint = 0x0040,
 };
-Q_ENUM_NS(ButtonType)
+Q_ENUM_CREATE(ButtonType)
 Q_DECLARE_FLAGS(ButtonFlags, ButtonType)
-Q_DECLARE_OPERATORS_FOR_FLAGS(ButtonFlags)
 
 enum WMMouseActionType
 {
@@ -209,15 +258,13 @@ enum WMMouseActionType
     WMLBUTTONDBLCLK = 0x0004,
     WMNCLBUTTONDOWN = 0x0008,
 };
-Q_ENUM_NS(WMMouseActionType)
+Q_ENUM_CREATE(WMMouseActionType)
 Q_DECLARE_FLAGS(WMMouseActionTypes, WMMouseActionType)
-Q_DECLARE_OPERATORS_FOR_FLAGS(WMMouseActionTypes)
+Q_END_ENUM_CREATE(ElaAppBarType)
+Q_DECLARE_OPERATORS_FOR_FLAGS(ElaAppBarType::ButtonFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(ElaAppBarType::WMMouseActionTypes)
 
-} // namespace ElaAppBarType
-
-namespace ElaTextType
-{
-Q_NAMESPACE_EXPORT(ELA_EXPORT)
+Q_BEGIN_ENUM_CREATE(ElaTextType)
 enum TextStyle
 {
     NoStyle = 0x0000,
@@ -229,12 +276,10 @@ enum TextStyle
     TitleLarge = 0x0006,
     Display = 0x0007,
 };
-Q_ENUM_NS(TextStyle)
-} // namespace ElaTextType
+Q_ENUM_CREATE(TextStyle)
+Q_END_ENUM_CREATE(ElaTextType)
 
-namespace ElaNavigationType
-{
-Q_NAMESPACE_EXPORT(ELA_EXPORT)
+Q_BEGIN_ENUM_CREATE(ElaNavigationType)
 enum NodeOperateReturnType
 {
     Success = 0x0000,
@@ -244,7 +289,7 @@ enum NodeOperateReturnType
     PageInvalid = 0x0004,
     FooterUpperLimit = 0x0005,
 };
-Q_ENUM_NS(NodeOperateReturnType)
+Q_ENUM_CREATE(NodeOperateReturnType)
 
 enum NavigationDisplayMode
 {
@@ -253,31 +298,27 @@ enum NavigationDisplayMode
     Compact = 0x0002,
     Maximal = 0x0003,
 };
-Q_ENUM_NS(NavigationDisplayMode)
+Q_ENUM_CREATE(NavigationDisplayMode)
 
 enum NavigationNodeType
 {
     PageNode = 0x0000,
     FooterNode = 0x0001,
 };
-Q_ENUM_NS(NavigationNodeType)
-} // namespace ElaNavigationType
+Q_ENUM_CREATE(NavigationNodeType)
+Q_END_ENUM_CREATE(ElaNavigationType)
 
-namespace ElaNavigationRouterType
-{
-Q_NAMESPACE_EXPORT(ELA_EXPORT)
+Q_BEGIN_ENUM_CREATE(ElaNavigationRouterType)
 enum NavigationRouteType
 {
     Success = 0x0000,
     ObjectInvalid = 0x0001,
     FunctionNameInvalid = 0x0002,
 };
-Q_ENUM_NS(NavigationRouteType)
-} // namespace ElaNavigationRouterType
+Q_ENUM_CREATE(NavigationRouteType)
+Q_END_ENUM_CREATE(ElaNavigationRouterType)
 
-namespace ElaEventBusType
-{
-Q_NAMESPACE_EXPORT(ELA_EXPORT)
+Q_BEGIN_ENUM_CREATE(ElaEventBusType)
 enum EventBusReturnType
 {
     Success = 0x0000,
@@ -285,38 +326,31 @@ enum EventBusReturnType
     EventNameInvalid = 0x0002,
 
 };
-Q_ENUM_NS(EventBusReturnType)
-} // namespace ElaEventBusType
+Q_ENUM_CREATE(EventBusReturnType)
+Q_END_ENUM_CREATE(ElaEventBusType)
 
-namespace ElaCardPixType
-{
-Q_NAMESPACE_EXPORT(ELA_EXPORT)
+Q_BEGIN_ENUM_CREATE(ElaCardPixType)
 enum PixMode
 {
     Default = 0x0000,
     RoundedRect = 0x0001,
     Ellipse = 0x0002,
 };
-Q_ENUM_NS(PixMode)
-} // namespace ElaCardPixType
+Q_ENUM_CREATE(PixMode)
+Q_END_ENUM_CREATE(ElaCardPixType)
 
-namespace ElaGraphicsSceneType
-{
-Q_NAMESPACE_EXPORT(ELA_EXPORT)
+Q_BEGIN_ENUM_CREATE(ElaGraphicsSceneType)
 enum SceneMode
 {
     Default = 0x0000,
     DragMove = 0x0001,
     MultiSelect = 0x0002,
     ItemLink = 0x0003,
-
 };
-Q_ENUM_NS(SceneMode)
-} // namespace ElaGraphicsSceneType
+Q_ENUM_CREATE(SceneMode)
+Q_END_ENUM_CREATE(ElaGraphicsSceneType)
 
-namespace ElaMessageBarType
-{
-Q_NAMESPACE_EXPORT(ELA_EXPORT)
+Q_BEGIN_ENUM_CREATE(ElaMessageBarType)
 enum PositionPolicy
 {
     Top = 0x0000,
@@ -328,7 +362,7 @@ enum PositionPolicy
     BottomRight = 0x0006,
     BottomLeft = 0x0007,
 };
-Q_ENUM_NS(PositionPolicy)
+Q_ENUM_CREATE(PositionPolicy)
 
 enum MessageMode
 {
@@ -337,13 +371,11 @@ enum MessageMode
     Information = 0x0002,
     Error = 0x0003,
 };
-Q_ENUM_NS(MessageMode)
-} // namespace ElaMessageBarType
+Q_ENUM_CREATE(MessageMode)
+Q_END_ENUM_CREATE(ElaMessageBarType)
 
-namespace ElaAwesomeType
-{
-Q_NAMESPACE_EXPORT(ELA_EXPORT)
-enum class ElaIconType
+Q_BEGIN_ENUM_CREATE(ElaIconType)
+enum IconName
 {
     None = 0x0,
     Broom = 0xe800,
@@ -3627,7 +3659,6 @@ enum class ElaIconType
     Xmark = 0xf4ce,
     XmarkLarge = 0xf4cf,
 };
-Q_ENUM_NS(ElaIconType)
-} // namespace ElaAwesomeType
-using namespace ElaAwesomeType;
+Q_ENUM_CREATE(IconName)
+Q_END_ENUM_CREATE(ElaIconType)
 #endif // DEF_H

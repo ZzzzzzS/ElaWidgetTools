@@ -3,6 +3,7 @@
 #include <QPainter>
 #include <QPointer>
 #include <QPropertyAnimation>
+#include <QTimer>
 #include <QWheelEvent>
 
 #include "ElaMenu.h"
@@ -15,36 +16,66 @@ ElaScrollBar::ElaScrollBar(QWidget* parent)
     Q_D(ElaScrollBar);
     d->q_ptr = this;
     setSingleStep(1);
+    setObjectName("ElaScrollBar");
     setAttribute(Qt::WA_OpaquePaintEvent, false);
     d->_pTargetMaximum = 0;
     d->_pisAnimation = false;
     connect(this, &ElaScrollBar::rangeChanged, d, &ElaScrollBarPrivate::onRangeChanged);
-    setStyle(new ElaScrollBarStyle(style()));
+    ElaScrollBarStyle* scrollBarStyle = new ElaScrollBarStyle(style());
+    scrollBarStyle->setScrollBar(this);
+    setStyle(scrollBarStyle);
     d->_slideSmoothAnimation = new QPropertyAnimation(this, "value");
     d->_slideSmoothAnimation->setEasingCurve(QEasingCurve::OutSine);
     d->_slideSmoothAnimation->setDuration(300);
     connect(d->_slideSmoothAnimation, &QPropertyAnimation::finished, this, [=]() { d->_scrollValue = value(); });
+
+    d->_expandTimer = new QTimer(this);
+    connect(d->_expandTimer, &QTimer::timeout, this, [=]() {
+        d->_expandTimer->stop();
+        d->_isExpand = underMouse();
+        scrollBarStyle->startExpandAnimation(d->_isExpand);
+    });
 }
 
 ElaScrollBar::ElaScrollBar(Qt::Orientation orientation, QWidget* parent)
-    : QScrollBar(orientation, parent), d_ptr(new ElaScrollBarPrivate())
+    : ElaScrollBar(parent)
 {
-    Q_D(ElaScrollBar);
-    d->q_ptr = this;
-    setSingleStep(1);
-    setAttribute(Qt::WA_OpaquePaintEvent, false);
-    d->_pTargetMaximum = 0;
-    d->_pisAnimation = false;
-    connect(this, &ElaScrollBar::rangeChanged, d, &ElaScrollBarPrivate::onRangeChanged);
-    setStyle(new ElaScrollBarStyle(style()));
-    d->_slideSmoothAnimation = new QPropertyAnimation(this, "value");
-    d->_slideSmoothAnimation->setEasingCurve(QEasingCurve::OutSine);
-    d->_slideSmoothAnimation->setDuration(300);
-    connect(d->_slideSmoothAnimation, &QPropertyAnimation::finished, this, [=]() { d->_scrollValue = value(); });
+    setOrientation(orientation);
 }
 
 ElaScrollBar::~ElaScrollBar()
 {
+}
+
+bool ElaScrollBar::event(QEvent* event)
+{
+    Q_D(ElaScrollBar);
+    switch (event->type())
+    {
+    case QEvent::Enter:
+    {
+        d->_expandTimer->stop();
+        if (!d->_isExpand)
+        {
+            d->_expandTimer->start(350);
+        }
+        break;
+    }
+    case QEvent::Leave:
+    {
+        d->_expandTimer->stop();
+        if (d->_isExpand)
+        {
+            d->_expandTimer->start(350);
+        }
+        break;
+    }
+    default:
+    {
+        break;
+    }
+    }
+    return QScrollBar::event(event);
 }
 
 void ElaScrollBar::mousePressEvent(QMouseEvent* event)
@@ -77,23 +108,34 @@ void ElaScrollBar::wheelEvent(QWheelEvent* event)
     if (this->orientation() == Qt::Horizontal)
     {
         int horizontalDelta = event->angleDelta().x();
-        if (d->_lastHorizontalDeltaAngle != horizontalDelta)
+        if ((value() == minimum() && horizontalDelta > 0) || (value() == maximum() && horizontalDelta < 0))
+        {
+            QScrollBar::wheelEvent(event);
+            return;
+        }
+        if (d->_lastHorizontalDeltaAngle != horizontalDelta || d->_scrollValue == -1)
         {
             d->_scrollValue = value();
             d->_lastHorizontalDeltaAngle = horizontalDelta;
         }
-        d->_scroll(horizontalDelta);
+        d->_scroll(event->modifiers(), horizontalDelta);
     }
     else
     {
         int verticalDelta = event->angleDelta().y();
-        if (d->_lastVerticalDeltaAngle != verticalDelta)
+        if ((value() == minimum() && verticalDelta > 0) || (value() == maximum() && verticalDelta < 0))
+        {
+            QScrollBar::wheelEvent(event);
+            return;
+        }
+        if (d->_lastVerticalDeltaAngle != verticalDelta || d->_scrollValue == -1)
         {
             d->_scrollValue = value();
             d->_lastVerticalDeltaAngle = verticalDelta;
         }
-        d->_scroll(verticalDelta);
+        d->_scroll(event->modifiers(), verticalDelta);
     }
+    event->accept();
 }
 
 void ElaScrollBar::contextMenuEvent(QContextMenuEvent* event)
@@ -102,16 +144,23 @@ void ElaScrollBar::contextMenuEvent(QContextMenuEvent* event)
     bool horiz = this->orientation() == Qt::Horizontal;
     QPointer<ElaMenu> menu = new ElaMenu(this);
     menu->setMenuItemHeight(27);
-    QAction* actScrollHere = menu->addAction(tr("Scroll here"));
+    // Scroll here
+    QAction* actScrollHere = menu->addElaIconAction(ElaIconType::UpDownLeftRight, tr("滚动到此处"));
     menu->addSeparator();
-    QAction* actScrollTop = menu->addAction(horiz ? tr("Left edge") : tr("Top"));
-    QAction* actScrollBottom = menu->addAction(horiz ? tr("Right edge") : tr("Bottom"));
+    // Left edge Top
+    QAction* actScrollTop = menu->addElaIconAction(horiz ? ElaIconType::ArrowLeftToLine : ElaIconType::ArrowUpToLine, horiz ? tr("左边缘") : tr("顶端"));
+    // Right edge Bottom
+    QAction* actScrollBottom = menu->addElaIconAction(horiz ? ElaIconType::ArrowRightToLine : ElaIconType::ArrowDownToLine, horiz ? tr("右边缘") : tr("底部"));
     menu->addSeparator();
-    QAction* actPageUp = menu->addAction(horiz ? tr("Page left") : tr("Page up"));
-    QAction* actPageDn = menu->addAction(horiz ? tr("Page right") : tr("Page down"));
+    // Page left Page up
+    QAction* actPageUp = menu->addElaIconAction(horiz ? ElaIconType::AnglesLeft : ElaIconType::AnglesUp, horiz ? tr("向左翻页") : tr("向上翻页"));
+    //Page right Page down
+    QAction* actPageDn = menu->addElaIconAction(horiz ? ElaIconType::AnglesRight : ElaIconType::AnglesDown, horiz ? tr("向右翻页") : tr("向下翻页"));
     menu->addSeparator();
-    QAction* actScrollUp = menu->addAction(horiz ? tr("Scroll left") : tr("Scroll up"));
-    QAction* actScrollDn = menu->addAction(horiz ? tr("Scroll right") : tr("Scroll down"));
+    //Scroll left Scroll up
+    QAction* actScrollUp = menu->addElaIconAction(horiz ? ElaIconType::AngleLeft : ElaIconType::AngleUp, horiz ? tr("向左滚动") : tr("向上滚动"));
+    //Scroll right Scroll down
+    QAction* actScrollDn = menu->addElaIconAction(horiz ? ElaIconType::AngleRight : ElaIconType::AngleDown, horiz ? tr("向右滚动") : tr("向下滚动"));
     QAction* actionSelected = menu->exec(event->globalPos());
     delete menu;
     if (!actionSelected)

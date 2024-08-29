@@ -13,29 +13,28 @@ class ElaGraphicsScenePrivate : public QObject
 {
     Q_OBJECT
     Q_D_CREATE(ElaGraphicsScene)
-    Q_PROPERTY_CREATE_D(bool, IsAutoSobel)
     Q_PROPERTY_CREATE_D(bool, IsCheckLinkPort)
     Q_PROPERTY_CREATE_D(QString, SerializePath)
 public:
     explicit ElaGraphicsScenePrivate(QObject* parent = nullptr);
     ~ElaGraphicsScenePrivate();
 
-    QList<ElaGraphicsItem*> serializeItem(int count);
-
     friend QDataStream& operator<<(QDataStream& stream, const ElaGraphicsScenePrivate* data);
     friend QDataStream& operator>>(QDataStream& stream, ElaGraphicsScenePrivate* data);
 
 private:
-    friend class ElaGraphicsItem;
+    bool _isLeftButtonPress{false};
     QMap<QString, ElaGraphicsItem*> _items; // 存储所有item
     ElaGraphicsSceneType::SceneMode _sceneMode;
-    QList<QJsonObject> _itemsLink; // item连接状态
+    QList<QVariantMap> _itemsLink; // item连接状态
     QList<ElaGraphicsLineItem*> _lineItemsList;
     ElaGraphicsLineItem* _linkLineItem{nullptr};
     qreal _currentZ{1};
     QPointF _lastPos;
     QPointF _lastLeftPressPos;
+    QList<ElaGraphicsItem*> _serializeItem(int count);
     void _removeLinkLineItem();
+    void _deserializeLink();
 };
 
 #endif // ELAGRAPHICSSCENEPRIVATE_H

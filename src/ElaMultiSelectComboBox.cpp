@@ -3,6 +3,7 @@
 #include <QApplication>
 #include <QDebug>
 #include <QLayout>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QPropertyAnimation>
 
@@ -54,9 +55,11 @@ ElaMultiSelectComboBox::ElaMultiSelectComboBox(QWidget* parent)
         }
         layout->addWidget(view());
         layout->setContentsMargins(6, 0, 6, 6);
+#ifndef Q_OS_WIN
+        container->setStyleSheet("background-color:transparent;");
+#endif
     }
     QComboBox::setMaxVisibleItems(5);
-    setInsertPolicy(QComboBox::NoInsert);
     connect(d->_comboView, &ElaComboBoxView::itemPressed, d, &ElaMultiSelectComboBoxPrivate::onItemPressed);
     connect(this, QOverload<int>::of(&ElaMultiSelectComboBox::currentIndexChanged), d, &ElaMultiSelectComboBoxPrivate::_refreshCurrentIndexs);
     d->_itemSelection.resize(32);
@@ -161,22 +164,13 @@ void ElaMultiSelectComboBox::paintEvent(QPaintEvent* e)
     QPainter painter(this);
     painter.save();
     painter.setRenderHints(QPainter::SmoothPixmapTransform | QPainter::Antialiasing | QPainter::TextAntialiasing);
-    if (d->_themeMode == ElaThemeType::Light)
-    {
-        painter.setPen(QPen(QColor(0xDF, 0xDF, 0xDF), 1));
-        painter.setBrush(underMouse() ? QColor(0xF6, 0xF6, 0xF6) : QColor(0xFD, 0xFD, 0xFD));
-    }
-    else
-    {
-        painter.setPen(QPen(QColor(0x4B, 0x4B, 0x4D), 1));
-        painter.setBrush(underMouse() ? QColor(0x44, 0x44, 0x44) : QColor(0x3B, 0x3B, 0x3B));
-    }
-
+    painter.setPen(ElaThemeColor(d->_themeMode, ComboBoxBorder));
+    painter.setBrush(isEnabled() ? underMouse() ? ElaThemeColor(d->_themeMode, ComboBoxHover) : ElaThemeColor(d->_themeMode, ComboBoxBase) : Qt::transparent);
     QRect foregroundRect = rect();
     foregroundRect.adjust(6, 1, -6, -1);
     painter.drawRoundedRect(foregroundRect, d->_pBorderRadius, d->_pBorderRadius);
     //文字绘制
-    painter.setPen(d->_themeMode == ElaThemeType::Light ? Qt::black : Qt::white);
+    painter.setPen(isEnabled() ? ElaThemeColor(d->_themeMode, WindowText) : ElaThemeColor(d->_themeMode, WindowTextDisable));
     QString currentText = painter.fontMetrics().elidedText(d->_currentText, Qt::ElideRight, foregroundRect.width() - 27 - width() * 0.05);
     painter.drawText(15, height() / 2 + painter.fontMetrics().ascent() / 2 - 1, currentText);
     //展开指示器绘制
@@ -189,7 +183,7 @@ void ElaMultiSelectComboBox::paintEvent(QPaintEvent* e)
         QFont iconFont = QFont("ElaAwesome");
         iconFont.setPixelSize(17);
         painter.setFont(iconFont);
-        painter.setPen(d->_themeMode == ElaThemeType::Light ? Qt::black : Qt::white);
+        painter.setPen(isEnabled() ? ElaThemeColor(d->_themeMode, WindowText) : ElaThemeColor(d->_themeMode, WindowTextDisable));
         QRectF expandIconRect(width() - 25, 0, 20, height());
         painter.translate(expandIconRect.x() + (qreal)expandIconRect.width() / 2 - 2, expandIconRect.y() + (qreal)expandIconRect.height() / 2);
         painter.rotate(d->_pExpandIconRotate);
@@ -212,7 +206,16 @@ void ElaMultiSelectComboBox::showPopup()
         QWidget* container = this->findChild<QFrame*>();
         if (container)
         {
-            int containerHeight = container->height();
+            int containerHeight = 0;
+            if (count() >= maxVisibleItems())
+            {
+                containerHeight = maxVisibleItems() * 35 + 8;
+            }
+            else
+            {
+                containerHeight = count() * 35 + 8;
+            }
+            view()->resize(view()->width(), containerHeight - 8);
             container->move(container->x(), container->y() + 3);
             QLayout* layout = container->layout();
             while (layout->count())
@@ -290,8 +293,10 @@ void ElaMultiSelectComboBox::hidePopup()
                 QPropertyAnimation* viewPosAnimation = new QPropertyAnimation(view(), "pos");
                 connect(viewPosAnimation, &QPropertyAnimation::finished, this, [=]() {
                     layout->addWidget(view());
+                    QMouseEvent focusEvent(QEvent::MouseButtonPress, QPoint(-1, -1), QPoint(-1, -1), Qt::NoButton, Qt::NoButton, Qt::NoModifier);
+                    QApplication::sendEvent(parentWidget(), &focusEvent);
                 });
-                QPoint viewPos = QPoint(7, 1);
+                QPoint viewPos = view()->pos();
                 connect(viewPosAnimation, &QPropertyAnimation::finished, this, [=]() { view()->move(viewPos); });
                 viewPosAnimation->setStartValue(viewPos);
                 viewPosAnimation->setEndValue(QPoint(viewPos.x(), viewPos.y() - view()->height()));

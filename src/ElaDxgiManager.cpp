@@ -1,9 +1,10 @@
 #include "ElaDxgiManager.h"
-
+#ifdef Q_OS_WIN
 #include <d3d11.h>
 #include <dxgi1_6.h>
 #include <windows.h>
 
+#include <QApplication>
 #include <QDebug>
 #include <QPainter>
 #include <QPainterPath>
@@ -12,7 +13,6 @@
 
 #include "ElaDxgi.h"
 #include "ElaDxgiManagerPrivate.h"
-#include "qapplication.h"
 Q_SINGLETON_CREATE_CPP(ElaDxgiManager);
 ElaDxgiManager::ElaDxgiManager(QObject* parent)
     : QObject{parent}, d_ptr(new ElaDxgiManagerPrivate())
@@ -278,3 +278,4 @@ bool ElaDxgiScreen::getIsSyncGrabSize() const
     Q_D(const ElaDxgiScreen);
     return d->_isSyncGrabSize;
 }
+#endif

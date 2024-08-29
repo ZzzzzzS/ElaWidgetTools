@@ -2,9 +2,10 @@
 #define ELADXGIMANAGER_H
 
 #include <QWidget>
-
+#ifdef Q_OS_WIN
 #include "singleton.h"
 #include "stdafx.h"
+
 class ElaDxgiManagerPrivate;
 class ELA_EXPORT ElaDxgiManager : public QObject
 {
@@ -33,6 +34,7 @@ public:
     int getGrabFrameRate() const;
     void setTimeoutMsValue(int timeoutValue);
     int getTimeoutMsValue() const;
+Q_SIGNALS:
     Q_SIGNAL void grabImageUpdate();
 };
 
@@ -51,5 +53,5 @@ public:
 protected:
     void paintEvent(QPaintEvent* event) override;
 };
-
+#endif
 #endif // ELADXGIMANAGER_H

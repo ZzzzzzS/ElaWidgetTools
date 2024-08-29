@@ -1,10 +1,10 @@
 # ElaWidgetTools
 
 ## 简介
-本项目是基于QT-Widget开发的FluentUI风格的组件库，同时提供不限于组件的常用集成功能；目前Main分支支持QT5.15.2及QT6所有版本，推荐版本为QT6.4.3和QT6.6.2；
+本项目是基于QT-Widget开发的FluentUI风格的组件库，同时提供不限于组件的常用集成功能；目前Main分支支持QT5.12以上所有版本(Linux为QT5.15以上)，推荐版本为QT6.4.3和QT6.6.2；
 
 ## 重要提示
-该项目目前为试作阶段，暂不接受任何PR！！！感谢您的支持！
+该项目项目性质原因，暂不接受任何PR！！！使用问题或BUG请直接进群反馈，都会及时处理，感谢您的支持！ 企鹅群：850243692
 
 ## 支持平台
 | [Windows][win-link] | [Ubuntu][ubuntu-link]
@@ -15,7 +15,7 @@
 [win-badge]: https://img.shields.io/badge/Windows-Passing-61C263
 
 [ubuntu-link]: https://github.com/Liniyous/ElaWidgetTools/actions?query=workflow%3AUbuntu "UbuntuAction"
-[ubuntu-badge]: https://img.shields.io/badge/Ubuntu-StayTuned-yellow
+[ubuntu-badge]: https://img.shields.io/badge/Ubuntu-Passing-61C263
 
 ## 发布
 
@@ -52,11 +52,14 @@
 |ElaImageCard|图片卡片||
 |ElaInteractiveCard|带图片的交互式透明卡片||
 |ElaLineEdit|输入框||
+|ElaListView|列表视图||
 |ElaLog|消息日志||
 |ElaMenu|菜单||
 |ElaMenuBar|菜单栏||
 |ElaMessageBar|弹出式信息栏|支持八方向，锚定位置|
 |ElaMessageButton|弹出信息按钮||
+|ElaPivot|轴转导航||
+|ElaPlainTextEdit|文本编辑框||
 |ElaPushButton|按钮||
 |ElaPopularCard|热门卡片||
 |ElaProgressBar|进度条||
@@ -69,6 +72,8 @@
 |ElaToggleSwitch|开关按钮||
 |ElaTabBar|选项卡|谷歌浏览器风格|
 |ElaTabWidget|选项卡页面|谷歌浏览器风格|
+|ElaTableView|表格视图||
+|ElaTreeView|树型视图||
 |ElaToolButton|带下拉菜单的工具按钮||
 |ElaToolBar|工具栏||
 |ElaTheme|主题管理器||
@@ -85,4 +90,4 @@
 |ElaGraphicsView|高级视图|按键缩放、拖动|
 |ElaGraphicsItem|高级图元|大量实用API|
 |ElaWindow|带导航栏的无边框窗口||
-|ElaWidget|无边框窗口||
+|ElaWidget|无边框模态窗口||

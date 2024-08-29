@@ -19,7 +19,7 @@ ElaToggleButton::ElaToggleButton(QWidget* parent)
     setMouseTracking(true);
     setFixedSize(80, 38);
     QFont font = this->font();
-    font.setPointSize(11);
+    font.setPixelSize(15);
     setFont(font);
     setObjectName("ElaToggleButton");
     setStyleSheet("#ElaToggleButton{background-color:transparent;}");
@@ -42,6 +42,7 @@ void ElaToggleButton::setIsToggled(bool isToggled)
     Q_D(ElaToggleButton);
     d->_isToggled = isToggled;
     update();
+    Q_EMIT toggled(isToggled);
 }
 
 bool ElaToggleButton::getIsToggled() const
@@ -100,12 +101,12 @@ void ElaToggleButton::paintEvent(QPaintEvent* event)
         if (d->_isToggled)
         {
             painter.setPen(ElaThemeColor(d->_themeMode, ToggleButtonToggledBorder));
-            painter.setBrush(d->_isPressed ? ElaThemeColor(d->_themeMode, ToggleButtonToggledPress) : (underMouse() ? ElaThemeColor(d->_themeMode, ToggleButtonToggledHover) : ElaThemeColor(d->_themeMode, ToggleButtonToggledBase)));
+            painter.setBrush(isEnabled() ? d->_isPressed ? ElaThemeColor(d->_themeMode, ToggleButtonToggledPress) : (underMouse() ? ElaThemeColor(d->_themeMode, ToggleButtonToggledHover) : ElaThemeColor(d->_themeMode, ToggleButtonToggledBase)) : ElaThemeColor(d->_themeMode, ToggleButtonDisableBase));
         }
         else
         {
             painter.setPen(QPen(ElaThemeColor(d->_themeMode, ToggleButtonNoToggledBorder), 2));
-            painter.setBrush(d->_isPressed ? ElaThemeColor(d->_themeMode, ToggleButtonNoToggledPress) : (underMouse() ? ElaThemeColor(d->_themeMode, ToggleButtonNoToggledHover) : ElaThemeColor(d->_themeMode, ToggleButtonNoToggledBase)));
+            painter.setBrush(isEnabled() ? d->_isPressed ? ElaThemeColor(d->_themeMode, ToggleButtonNoToggledPress) : (underMouse() ? ElaThemeColor(d->_themeMode, ToggleButtonNoToggledHover) : ElaThemeColor(d->_themeMode, ToggleButtonNoToggledBase)) : ElaThemeColor(d->_themeMode, ToggleButtonDisableBase));
         }
     }
     else
@@ -124,7 +125,7 @@ void ElaToggleButton::paintEvent(QPaintEvent* event)
     }
 
     //文字绘制
-    painter.setPen((d->_isToggled ? ElaThemeColor(d->_themeMode, ToggleButtonToggledText) : ElaThemeColor(d->_themeMode, ToggleButtonNoToggledText)));
+    painter.setPen(isEnabled() ? d->_isToggled ? ElaThemeColor(d->_themeMode, ToggleButtonToggledText) : ElaThemeColor(d->_themeMode, ToggleButtonNoToggledText) : ElaThemeColor(d->_themeMode, WindowTextDisable));
     painter.drawText(foregroundRect, Qt::AlignCenter, d->_pText);
     painter.restore();
 }

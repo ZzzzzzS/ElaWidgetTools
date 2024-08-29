@@ -7,13 +7,11 @@
 #include "Def.h"
 #include "stdafx.h"
 class ElaNavigationNode;
-class ElaNavigationModelPrivate;
 class ElaNavigationModel : public QAbstractItemModel
 {
     Q_OBJECT
-    Q_Q_CREATE(ElaNavigationModel)
-    Q_PRIVATE_CREATE_Q_H(ElaNavigationNode*, SelectedNode)
-    Q_PRIVATE_CREATE_Q_H(ElaNavigationNode*, SelectedExpandedNode)
+    Q_PRIVATE_CREATE(ElaNavigationNode*, SelectedNode)
+    Q_PRIVATE_CREATE(ElaNavigationNode*, SelectedExpandedNode)
 
 public:
     explicit ElaNavigationModel(QObject* parent = nullptr);
@@ -23,13 +21,17 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    ElaNavigationType::NodeOperateReturnType addExpanderNode(QString expanderTitle, QString& expanderKey, ElaIconType awesome) const;
-    ElaNavigationType::NodeOperateReturnType addExpanderNode(QString expanderTitle, QString& expanderKey, QString targetExpanderKey, ElaIconType awesome) const;
-    ElaNavigationType::NodeOperateReturnType addPageNode(QString pageTitle, QString& pageKey, ElaIconType awesome) const;
-    ElaNavigationType::NodeOperateReturnType addPageNode(QString pageTitle, QString& pageKey, QString targetExpanderKey, ElaIconType awesome) const;
-    ElaNavigationType::NodeOperateReturnType addPageNode(QString pageTitle, QString& pageKey, int keyPoints, ElaIconType awesome) const;
-    ElaNavigationType::NodeOperateReturnType addPageNode(QString pageTitle, QString& pageKey, QString targetExpanderKey, int keyPoints, ElaIconType awesome) const;
+    ElaNavigationType::NodeOperateReturnType addExpanderNode(QString expanderTitle, QString& expanderKey, ElaIconType::IconName awesome);
+    ElaNavigationType::NodeOperateReturnType addExpanderNode(QString expanderTitle, QString& expanderKey, QString targetExpanderKey, ElaIconType::IconName awesome);
+    ElaNavigationType::NodeOperateReturnType addPageNode(QString pageTitle, QString& pageKey, ElaIconType::IconName awesome);
+    ElaNavigationType::NodeOperateReturnType addPageNode(QString pageTitle, QString& pageKey, QString targetExpanderKey, ElaIconType::IconName awesome);
+    ElaNavigationType::NodeOperateReturnType addPageNode(QString pageTitle, QString& pageKey, int keyPoints, ElaIconType::IconName awesome);
+    ElaNavigationType::NodeOperateReturnType addPageNode(QString pageTitle, QString& pageKey, QString targetExpanderKey, int keyPoints, ElaIconType::IconName awesome);
     ElaNavigationNode* getNavigationNode(QString nodeKey) const;
+
+private:
+    mutable QMap<QString, ElaNavigationNode*> _nodesMap;
+    ElaNavigationNode* _rootNode{nullptr};
 };
 
 #endif // ELANAVIGATIONMODEL_H

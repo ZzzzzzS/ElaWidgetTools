@@ -54,10 +54,6 @@ else()
 # Define properties for Android with Qt 5 after find_package() calls as:
 #    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     else()
-        qt5_add_resources(PROJECT_SOURCES
-            ../src/include/ElaWidgetTools.qrc
-            ElaWidgetToolsExample.qrc
-        )
         add_executable(ElaWidgetToolsExample
             ${PROJECT_SOURCES}
             ../src/include/ElaWidgetTools.qrc
@@ -68,6 +64,8 @@ endif()
 
 include_directories(
     ../src/include
+    ExamplePage
+    ModelView
 )
 set(EXECUTABLE_OUTPUT_PATH  ${CMAKE_BINARY_DIR})
 target_link_libraries(ElaWidgetToolsExample PRIVATE Qt${QT_VERSION_MAJOR}::Widgets

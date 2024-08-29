@@ -1,7 +1,7 @@
 #include "ElaAppBarPrivate.h"
-
+#ifdef Q_OS_WIN
 #include <Windows.h>
-
+#endif
 #include <QGuiApplication>
 #include <QLabel>
 #include <QPropertyAnimation>
@@ -57,9 +57,15 @@ void ElaAppBarPrivate::onCloseButtonClicked()
 void ElaAppBarPrivate::onStayTopButtonClicked()
 {
     Q_Q(const ElaAppBar);
+#ifdef Q_OS_WIN
     HWND hwnd = reinterpret_cast<HWND>(q->window()->winId());
     _stayTopButton->setIsSelected(_pIsStayTop);
     ::SetWindowPos(hwnd, _pIsStayTop ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+#else
+    q->window()->setWindowFlag(Qt::WindowStaysOnTopHint, _pIsStayTop);
+    _stayTopButton->setIsSelected(_pIsStayTop);
+    q->window()->show();
+#endif
 }
 
 void ElaAppBarPrivate::_changeMaxButtonAwesome(bool isMaximized)
@@ -120,6 +126,47 @@ void ElaAppBarPrivate::_showSystemMenu(QPoint point)
 #endif
 }
 
+void ElaAppBarPrivate::_updateCursor(int edges)
+{
+    Q_Q(const ElaAppBar);
+    switch (edges)
+    {
+    case 0:
+    {
+        q->window()->setCursor(Qt::ArrowCursor);
+        break;
+    }
+    case Qt::LeftEdge:
+    case Qt::RightEdge:
+    {
+        q->window()->setCursor(Qt::SizeHorCursor);
+        break;
+    }
+    case Qt::TopEdge:
+    case Qt::BottomEdge:
+    {
+        q->window()->setCursor(Qt::SizeVerCursor);
+        break;
+    }
+    case Qt::LeftEdge | Qt::TopEdge:
+    case Qt::RightEdge | Qt::BottomEdge:
+    {
+        q->window()->setCursor(Qt::SizeFDiagCursor);
+        break;
+    }
+    case Qt::RightEdge | Qt::TopEdge:
+    case Qt::LeftEdge | Qt::BottomEdge:
+    {
+        q->window()->setCursor(Qt::SizeBDiagCursor);
+        break;
+    }
+    default:
+    {
+        break;
+    }
+    }
+}
+
 bool ElaAppBarPrivate::_containsCursorToItem(QWidget* item)
 {
     Q_Q(const ElaAppBar);
@@ -167,7 +214,7 @@ int ElaAppBarPrivate::_calculateMinimumWidth()
     {
         width += _iconLabel->width();
     }
-    width += 15;
+    width += 20;
     bool isHasNavigationBar = false;
     if (q->parentWidget()->findChild<ElaNavigationBar*>())
     {

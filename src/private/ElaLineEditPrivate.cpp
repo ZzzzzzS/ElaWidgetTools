@@ -1,7 +1,5 @@
 #include "ElaLineEditPrivate.h"
 
-#include <QGraphicsDropShadowEffect>
-
 #include "ElaApplication.h"
 #include "ElaLineEdit.h"
 
@@ -32,6 +30,7 @@ void ElaLineEditPrivate::onWMWindowClickedEvent(QVariantMap data)
 void ElaLineEditPrivate::onThemeChanged(ElaThemeType::ThemeMode themeMode)
 {
     Q_Q(ElaLineEdit);
+    _themeMode = themeMode;
     if (themeMode == ElaThemeType::Light)
     {
         QPalette palette;

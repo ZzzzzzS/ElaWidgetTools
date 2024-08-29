@@ -1,6 +1,7 @@
 #ifndef ELAMULTISELECTCOMBOBOXPRIVATE_H
 #define ELAMULTISELECTCOMBOBOXPRIVATE_H
 #include <QObject>
+#include <QVector>
 
 #include "Def.h"
 #include "stdafx.h"
@@ -21,10 +22,10 @@ public:
 
 private:
     ElaComboBoxStyle* _comboBoxStyle{nullptr};
-    bool _isAllowHidePopup{false};
     ElaComboBoxView* _comboView{nullptr};
     QVector<bool> _itemSelection;
     bool _isFirstPopup{false};
+    bool _isAllowHidePopup{false};
     QString _currentText;
     QStringList _selectedTextList;
     void _refreshCurrentIndexs();

@@ -4,6 +4,7 @@
 #include <QApplication>
 #include <QLayout>
 #include <QListView>
+#include <QMouseEvent>
 #include <QPropertyAnimation>
 
 #include "ElaComboBoxStyle.h"
@@ -48,6 +49,9 @@ ElaComboBox::ElaComboBox(QWidget* parent)
         }
         layout->addWidget(view());
         layout->setContentsMargins(6, 0, 6, 6);
+#ifndef Q_OS_WIN
+        container->setStyleSheet("background-color:transparent;");
+#endif
     }
     QComboBox::setMaxVisibleItems(5);
     connect(eTheme, &ElaTheme::themeModeChanged, this, [=](ElaThemeType::ThemeMode themeMode) { d->_themeMode = themeMode; });
@@ -64,13 +68,21 @@ void ElaComboBox::showPopup()
     qApp->setEffectEnabled(Qt::UI_AnimateCombo, false);
     QComboBox::showPopup();
     qApp->setEffectEnabled(Qt::UI_AnimateCombo, oldAnimationEffects);
-
     if (count() > 0)
     {
         QWidget* container = this->findChild<QFrame*>();
         if (container)
         {
-            int containerHeight = container->height();
+            int containerHeight = 0;
+            if (count() >= maxVisibleItems())
+            {
+                containerHeight = maxVisibleItems() * 35 + 8;
+            }
+            else
+            {
+                containerHeight = count() * 35 + 8;
+            }
+            view()->resize(view()->width(), containerHeight - 8);
             container->move(container->x(), container->y() + 3);
             QLayout* layout = container->layout();
             while (layout->count())
@@ -135,8 +147,10 @@ void ElaComboBox::hidePopup()
             QPropertyAnimation* viewPosAnimation = new QPropertyAnimation(view(), "pos");
             connect(viewPosAnimation, &QPropertyAnimation::finished, this, [=]() {
                 layout->addWidget(view());
+                QMouseEvent focusEvent(QEvent::MouseButtonPress, QPoint(-1, -1), QPoint(-1, -1), Qt::NoButton, Qt::NoButton, Qt::NoModifier);
+                QApplication::sendEvent(parentWidget(), &focusEvent);
             });
-            QPoint viewPos = QPoint(7, 1);
+            QPoint viewPos = view()->pos();
             connect(viewPosAnimation, &QPropertyAnimation::finished, this, [=]() { view()->move(viewPos); });
             viewPosAnimation->setStartValue(viewPos);
             viewPosAnimation->setEndValue(QPoint(viewPos.x(), viewPos.y() - view()->height()));

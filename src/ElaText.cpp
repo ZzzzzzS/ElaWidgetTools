@@ -1,5 +1,6 @@
 #include "ElaText.h"
 
+#include <QContextMenuEvent>
 #include <QPainter>
 
 #include "ElaTheme.h"

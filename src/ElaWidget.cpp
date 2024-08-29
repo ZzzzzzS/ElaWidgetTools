@@ -1,7 +1,9 @@
 #include "ElaWidget.h"
 
+#include <QApplication>
 #include <QHBoxLayout>
 #include <QPainter>
+#include <QScreen>
 #include <QVBoxLayout>
 
 #include "ElaAppBar.h"
@@ -15,7 +17,7 @@ ElaWidget::ElaWidget(QWidget* parent)
     resize(500, 500); // 默认宽高
     setWindowTitle("ElaWidget");
     setObjectName("ElaWidget");
-
+    setWindowModality(Qt::ApplicationModal);
     d->_windowLinearGradient = new QLinearGradient(0, 0, width(), height());
     d->_windowLinearGradient->setColorAt(0, ElaThemeColor(ElaThemeType::Light, WindowBaseStart));
     d->_windowLinearGradient->setColorAt(1, ElaThemeColor(ElaThemeType::Light, WindowBaseEnd));
@@ -34,6 +36,20 @@ ElaWidget::ElaWidget(QWidget* parent)
 
 ElaWidget::~ElaWidget()
 {
+}
+
+void ElaWidget::moveToCenter()
+{
+    if (isMaximized() || isFullScreen())
+    {
+        return;
+    }
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    auto geometry = screen()->availableGeometry();
+#else
+    auto geometry = qApp->screenAt(this->geometry().center())->geometry();
+#endif
+    setGeometry((geometry.left() + geometry.right() - width()) / 2, (geometry.top() + geometry.bottom() - height()) / 2, width(), height());
 }
 
 void ElaWidget::setIsStayTop(bool isStayTop)
@@ -56,6 +72,23 @@ void ElaWidget::setIsFixedSize(bool isFixedSize)
 bool ElaWidget::getIsFixedSize() const
 {
     return d_ptr->_appBar->getIsFixedSize();
+}
+
+void ElaWidget::setWindowButtonFlag(ElaAppBarType::ButtonType buttonFlag, bool isEnable)
+{
+    Q_D(ElaWidget);
+    d->_appBar->setWindowButtonFlag(buttonFlag, isEnable);
+}
+
+void ElaWidget::setWindowButtonFlags(ElaAppBarType::ButtonFlags buttonFlags)
+{
+    Q_D(ElaWidget);
+    d->_appBar->setWindowButtonFlags(buttonFlags);
+}
+
+ElaAppBarType::ButtonFlags ElaWidget::getWindowButtonFlags() const
+{
+    return d_ptr->_appBar->getWindowButtonFlags();
 }
 
 void ElaWidget::paintEvent(QPaintEvent* event)

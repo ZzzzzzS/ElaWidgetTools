@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 
+#include <QDebug>
 #include <QGraphicsView>
 #include <QHBoxLayout>
 #include <QStackedWidget>
@@ -20,15 +21,18 @@
 #include "ElaText.h"
 #include "ElaToolBar.h"
 #include "ElaToolButton.h"
-#include "ElaWidget.h"
-#include "ExamplePage/T_BaseComponents.h"
-#include "ExamplePage/T_Card.h"
+#include "T_About.h"
+#include "T_BaseComponents.h"
+#include "T_Card.h"
+#include "T_View.h"
+#ifdef Q_OS_WIN
 #include "ExamplePage/T_ElaScreen.h"
+#endif
 #include "ExamplePage/T_Home.h"
 #include "ExamplePage/T_Icon.h"
 #include "ExamplePage/T_LogWidget.h"
+#include "ExamplePage/T_Navigation.h"
 #include "ExamplePage/T_Popup.h"
-#include "ExamplePage/T_TabWidget.h"
 #include "ExamplePage/T_UpdateWidget.h"
 MainWindow::MainWindow(QWidget* parent)
     : ElaWindow(parent)
@@ -55,10 +59,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::onCloseButtonClicked()
 {
-    ElaContentDialog* dialag = new ElaContentDialog(this);
-    connect(dialag, &ElaContentDialog::rightButtonClicked, this, &MainWindow::closeWindow);
-    connect(dialag, &ElaContentDialog::middleButtonClicked, this, &MainWindow::showMinimized);
-    dialag->show();
+    ElaContentDialog dialog(this);
+    connect(&dialog, &ElaContentDialog::rightButtonClicked, this, &MainWindow::closeWindow);
+    connect(&dialog, &ElaContentDialog::middleButtonClicked, this, &MainWindow::showMinimized);
+    dialog.exec();
 }
 
 void MainWindow::initWindow()
@@ -95,7 +99,7 @@ void MainWindow::initEdgeLayout()
     menuBar->addElaIconAction(ElaIconType::AtomSimple, "动作菜单");
     ElaMenu* iconMenu = menuBar->addMenu(ElaIconType::Aperture, "图标菜单");
     iconMenu->setMenuItemHeight(27);
-    iconMenu->addElaIconAction(ElaIconType::BoxCheck, "排序方式", QKeySequence::Save);
+    iconMenu->addElaIconAction(ElaIconType::BoxCheck, "排序方式", QKeySequence::SelectAll);
     iconMenu->addElaIconAction(ElaIconType::Copy, "复制");
     iconMenu->addElaIconAction(ElaIconType::MagnifyingGlassPlus, "显示设置");
     iconMenu->addSeparator();
@@ -104,7 +108,7 @@ void MainWindow::initEdgeLayout()
     menuBar->addSeparator();
     ElaMenu* shortCutMenu = new ElaMenu("快捷菜单(&A)", this);
     shortCutMenu->setMenuItemHeight(27);
-    shortCutMenu->addElaIconAction(ElaIconType::BoxCheck, "排序方式", QKeySequence::Save);
+    shortCutMenu->addElaIconAction(ElaIconType::BoxCheck, "排序方式", QKeySequence::Find);
     shortCutMenu->addElaIconAction(ElaIconType::Copy, "复制");
     shortCutMenu->addElaIconAction(ElaIconType::MagnifyingGlassPlus, "显示设置");
     shortCutMenu->addSeparator();
@@ -136,6 +140,7 @@ void MainWindow::initEdgeLayout()
     toolBar->addSeparator();
     ElaToolButton* toolButton3 = new ElaToolButton(this);
     toolButton3->setElaIcon(ElaIconType::Bluetooth);
+    toolButton3->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     toolButton3->setText("Bluetooth");
     toolBar->addWidget(toolButton3);
     ElaToolButton* toolButton4 = new ElaToolButton(this);
@@ -158,12 +163,15 @@ void MainWindow::initEdgeLayout()
     toolButton10->setElaIcon(ElaIconType::Coins);
     toolBar->addWidget(toolButton10);
     ElaToolButton* toolButton11 = new ElaToolButton(this);
+    toolButton11->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     toolButton11->setElaIcon(ElaIconType::AlarmPlus);
     toolButton11->setText("AlarmPlus");
     toolBar->addWidget(toolButton11);
     ElaToolButton* toolButton12 = new ElaToolButton(this);
     toolButton12->setElaIcon(ElaIconType::Crown);
     toolBar->addWidget(toolButton12);
+    QAction* test = new QAction(this);
+    test->setMenu(new QMenu(this));
 
     ElaProgressBar* progressBar = new ElaProgressBar(this);
     progressBar->setMinimum(0);
@@ -195,44 +203,46 @@ void MainWindow::initEdgeLayout()
 void MainWindow::initContent()
 {
     _homePage = new T_Home(this);
+#ifdef Q_OS_WIN
     _elaScreenPage = new T_ElaScreen(this);
+#endif
     _iconPage = new T_Icon(this);
     _baseComponentsPage = new T_BaseComponents(this);
-    _tabWidgetPage = new T_TabWidget(this);
+    _navigationPage = new T_Navigation(this);
     _popupPage = new T_Popup(this);
     _cardPage = new T_Card(this);
+    _viewPage = new T_View(this);
 
     // GraphicsView
     ElaGraphicsScene* scene = new ElaGraphicsScene(this);
     scene->setSceneRect(0, 0, 1500, 1500);
-    // scene->setSceneRect(0, 0, 1000, 1000);
     ElaGraphicsItem* item1 = new ElaGraphicsItem();
     item1->setWidth(100);
     item1->setHeight(100);
+    item1->setMaxLinkPortCount(100);
+    item1->setMaxLinkPortCount(1);
     ElaGraphicsItem* item2 = new ElaGraphicsItem();
     item2->setWidth(100);
     item2->setHeight(100);
-    // ElaGraphicsItem* item3 = new ElaGraphicsItem();
-    // item3->setWidth(100);
-    // item3->setHeight(100);
-    // item3->setPos(10, 10);
     scene->addItem(item1);
     scene->addItem(item2);
-    // scene->addItem(item3);
     ElaGraphicsView* view = new ElaGraphicsView(scene);
     view->setScene(scene);
 
     QString testKey_1;
     QString testKey_2;
     addPageNode("HOME", _homePage, ElaIconType::House);
+#ifdef Q_OS_WIN
     addExpanderNode("ElaDxgi", _elaDxgiKey, ElaIconType::TvMusic);
     addPageNode("ElaScreen", _elaScreenPage, _elaDxgiKey, 3, ElaIconType::ObjectGroup);
+#endif
     // navigation(elaScreenWidget->property("ElaPageKey").toString());
     addPageNode("ElaBaseComponents", _baseComponentsPage, ElaIconType::CabinetFiling);
+    addPageNode("ElaView", _viewPage, ElaIconType::CameraViewfinder);
     addPageNode("ElaGraphics", view, 9, ElaIconType::KeySkeleton);
-    addPageNode("ElaTabWidget", _tabWidgetPage, ElaIconType::Table);
-    addPageNode("ElaPopup", _popupPage, ElaIconType::Envelope);
     addPageNode("ElaCard", _cardPage, ElaIconType::Cards);
+    addPageNode("ElaNavigation", _navigationPage, ElaIconType::Table);
+    addPageNode("ElaPopup", _popupPage, ElaIconType::Envelope);
     addPageNode("ElaIcon", _iconPage, 99, ElaIconType::FontAwesome);
     addExpanderNode("TEST4", testKey_2, ElaIconType::Acorn);
     addExpanderNode("TEST5", testKey_1, testKey_2, ElaIconType::Acorn);
@@ -251,18 +261,21 @@ void MainWindow::initContent()
     addExpanderNode("TEST17", testKey_1, ElaIconType::Acorn);
 
     addFooterNode("About", nullptr, _aboutKey, 0, ElaIconType::User);
-    ElaWidget* widget = new ElaWidget();
-    widget->setWindowModality(Qt::ApplicationModal);
-    widget->hide();
+    T_About* aboutPage = new T_About();
+    aboutPage->hide();
     connect(this, &ElaWindow::navigationNodeClicked, this, [=](ElaNavigationType::NavigationNodeType nodeType, QString nodeKey) {
         if (_aboutKey == nodeKey)
         {
-            widget->show();
+            aboutPage->setFixedSize(400, 400);
+            aboutPage->moveToCenter();
+            aboutPage->show();
         }
     });
     addFooterNode("Setting", new QWidget(this), _settingKey, 0, ElaIconType::GearComplex);
     connect(this, &MainWindow::userInfoCardClicked, this, [=]() { this->navigation(_homePage->property("ElaPageKey").toString()); });
+#ifdef Q_OS_WIN
     connect(_homePage, &T_Home::elaScreenNavigation, this, [=]() { this->navigation(_elaScreenPage->property("ElaPageKey").toString()); });
+#endif
     connect(_homePage, &T_Home::elaBaseComponentNavigation, this, [=]() { this->navigation(_baseComponentsPage->property("ElaPageKey").toString()); });
     connect(_homePage, &T_Home::elaSceneNavigation, this, [=]() { this->navigation(view->property("ElaPageKey").toString()); });
     connect(_homePage, &T_Home::elaIconNavigation, this, [=]() { this->navigation(_iconPage->property("ElaPageKey").toString()); });

@@ -35,7 +35,7 @@ void ElaSuggestDelegate::paint(QPainter* painter, const QStyleOptionViewItem& op
     QRect optionRect = option.rect;
     optionRect.adjust(margin * 2, margin, -margin * 2, -margin);
     path.addRoundedRect(optionRect, 8, 8);
-    if (option.showDecorationSelected && (option.state & QStyle::State_Selected))
+    if (option.state & QStyle::State_Selected)
     {
         if (option.state & QStyle::State_MouseOver)
         {
@@ -57,9 +57,6 @@ void ElaSuggestDelegate::paint(QPainter* painter, const QStyleOptionViewItem& op
         }
     }
     //文字绘制
-    QFont titlefont("Microsoft YaHei", 10);
-    titlefont.setHintingPreference(QFont::PreferNoHinting);
-    painter->setFont(titlefont);
     painter->setPen(ElaThemeColor(_themeMode, WindowText));
     painter->drawText(option.rect.x() + 37, option.rect.y() + 25, suggest->getSuggestText());
 
