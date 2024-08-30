@@ -1,7 +1,7 @@
 #include "ElaThemePrivate.h"
 
 ElaThemePrivate::ElaThemePrivate(QObject* parent)
-    : QObject{parent}
+    : QObject{ parent }
 {
 }
 
@@ -132,10 +132,10 @@ void ElaThemePrivate::_initThemeColor()
     _darkThemeColorList[ElaThemeType::ListViewItemSelectedHover] = QColor(0x3A, 0x3A, 0x3A);
 
     //ElaMenu
-    _lightThemeColorList[ElaThemeType::MenuBaseStart] = QColor(0xF2, 0xE7, 0xF5);
+    _lightThemeColorList[ElaThemeType::MenuBaseStart] = QColor(0xF9, 0xF9, 0xF9);
     _darkThemeColorList[ElaThemeType::MenuBaseStart] = QColor(0x2D, 0x2D, 0x2D);
-    _lightThemeColorList[ElaThemeType::MenuBaseEnd] = QColor(0xED, 0xF3, 0xF9);
-    _darkThemeColorList[ElaThemeType::MenuBaseEnd] = QColor(0x3D, 0x3D, 0x3D);
+    _lightThemeColorList[ElaThemeType::MenuBaseEnd] = QColor(0xF9, 0xF9, 0xF9);
+    _darkThemeColorList[ElaThemeType::MenuBaseEnd] = QColor(0x2D, 0x2D, 0x2D);
     _lightThemeColorList[ElaThemeType::MenuBorder] = QColor(0xBE, 0xBA, 0xBE);
     _darkThemeColorList[ElaThemeType::MenuBorder] = QColor(0x52, 0x50, 0x52);
     _lightThemeColorList[ElaThemeType::MenuSeparator] = QColor(0xB3, 0xB3, 0xB3);
