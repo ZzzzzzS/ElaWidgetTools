@@ -31,6 +31,8 @@ ElaWindow::ElaWindow(QWidget* parent)
 {
     Q_D(ElaWindow);
     d->q_ptr = this;
+    d->_pIsEnableMica = false;
+    d->_pMicaImagePath = ":/Resource/Image/MicaBase.png";
     setProperty("ElaBaseClassName", "ElaWindow");
     resize(1366, 768); // 默认宽高
 
@@ -97,10 +99,42 @@ ElaWindow::ElaWindow(QWidget* parent)
         palette.setBrush(QPalette::Window, *d->_windowLinearGradient);
         this->setPalette(palette);
         });
+
+    d->_themeMode = eTheme->getThemeMode();
+    connect(eTheme, &ElaTheme::themeModeChanged, this, [=](ElaThemeType::ThemeMode themeMode) { d->_themeMode = themeMode; });
 }
 
 ElaWindow::~ElaWindow()
 {
+}
+
+void ElaWindow::setIsEnableMica(bool isEnable)
+{
+    Q_D(ElaWindow);
+    d->_pIsEnableMica = isEnable;
+    if (isEnable)
+    {
+        d->_initMicaBaseImage(QImage(d->_pMicaImagePath));
+    }
+    Q_EMIT pIsEnableMicaChanged();
+}
+
+bool ElaWindow::getIsEnableMica() const
+{
+    Q_D(const ElaWindow);
+    return d->_pIsEnableMica;
+}
+
+void ElaWindow::setMicaImagePath(QString micaImagePath)
+{
+    Q_D(ElaWindow);
+    d->_pMicaImagePath = micaImagePath;
+}
+
+QString ElaWindow::getMicaImagePath() const
+{
+    Q_D(const ElaWindow);
+    return d->_pMicaImagePath;
 }
 
 void ElaWindow::moveToCenter()
@@ -311,6 +345,21 @@ void ElaWindow::closeWindow()
     d->_appBar->closeWindow();
 }
 
+void ElaWindow::moveEvent(QMoveEvent* event)
+{
+    Q_D(ElaWindow);
+    d->_updateMica();
+    QMainWindow::moveEvent(event);
+}
+
+void ElaWindow::resizeEvent(QResizeEvent* event)
+{
+    Q_D(ElaWindow);
+    d->_updateMica();
+    d->_windowLinearGradient->setFinalStop(width(), height());
+    QWidget::resizeEvent(event);
+}
+
 bool ElaWindow::eventFilter(QObject* watched, QEvent* event)
 {
     Q_D(ElaWindow);
@@ -327,13 +376,6 @@ bool ElaWindow::eventFilter(QObject* watched, QEvent* event)
     }
     }
     return QMainWindow::eventFilter(watched, event);
-}
-
-void ElaWindow::resizeEvent(QResizeEvent* event)
-{
-    Q_D(ElaWindow);
-    d->_windowLinearGradient->setFinalStop(width(), height());
-    QWidget::resizeEvent(event);
 }
 
 QMenu* ElaWindow::createPopupMenu()

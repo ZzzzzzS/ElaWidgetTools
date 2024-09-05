@@ -54,6 +54,10 @@ enum ThemeColor
     CheckBoxCheckedBase,
     CheckBoxCheckedHover,
     CheckBoxCheckedPress,
+    ColorDialogPickerBorder,
+    ColorDialogDisplayBorder,
+    ColorDialogBase,
+    ColorDialogButtonAreaBase,
     ComboBoxMark,
     ComboBoxBorder,
     ComboBoxBase,
@@ -231,8 +235,7 @@ enum ThemeColor
     WindowTabBarHover,
     WindowTabBarSelected,
     WindowTabBarSeparator,
-    WindowCentralStackBaseStart,
-    WindowCentralStackBaseEnd,
+    WindowCentralStackBase,
 };
 Q_ENUM_CREATE(ThemeColor)
 Q_END_ENUM_CREATE(ElaThemeType)
