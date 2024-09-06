@@ -24,14 +24,15 @@ ElaWidget::ElaWidget(QWidget* parent)
 
     // 自定义AppBar
     d->_appBar = new ElaAppBar(this);
-    d->_appBar->setIsStayTop(true);
-    d->_appBar->setWindowButtonFlags(ElaAppBarType::StayTopButtonHint | ElaAppBarType::MinimizeButtonHint | ElaAppBarType::MaximizeButtonHint | ElaAppBarType::CloseButtonHint);
+    d->_appBar->setIsStayTop(false);
+    d->_appBar->setWindowButtonFlags(ElaAppBarType::CloseButtonHint);
     d->_appBar->setIsDefaultClosed(false);
     connect(d->_appBar, &ElaAppBar::closeButtonClicked, this, [=]() {
-        hide();
+        close();
     });
     setAttribute(Qt::WA_DeleteOnClose);
     connect(eTheme, &ElaTheme::themeModeChanged, d, &ElaWidgetPrivate::onThemeModeChanged);
+    d->onThemeModeChanged(eTheme->getThemeMode());
 }
 
 ElaWidget::~ElaWidget()
