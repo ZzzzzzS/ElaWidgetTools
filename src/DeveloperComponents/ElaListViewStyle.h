@@ -18,7 +18,8 @@ public:
 
 private:
     ElaThemeType::ThemeMode _themeMode;
-    int _leftPadding{11};
+    int _leftPadding{20};
+    int _leftCheckboxPadding{ 7 };
 };
 
 #endif // ELALISTVIEWSTYLE_H

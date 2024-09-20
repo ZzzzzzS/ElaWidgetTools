@@ -31,7 +31,7 @@ ElaNavigationView::ElaNavigationView(QWidget* parent)
     vScrollBar->setisAnimation(true);
     connect(vScrollBar, &ElaScrollBar::rangeAnimationFinished, this, [=]() {
         doItemsLayout();
-    });
+        });
     setVerticalScrollBar(vScrollBar);
     setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
@@ -61,10 +61,10 @@ ElaNavigationView::ElaNavigationView(QWidget* parent)
         {
             _navigationStyle->setPressIndex(QModelIndex());
         }
-    });
+        });
 
     setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(this, &ElaNavigationView::customContextMenuRequested, this, &ElaNavigationView::onCustomContextMenuRequested);
+    //connect(this, &ElaNavigationView::customContextMenuRequested, this, &ElaNavigationView::onCustomContextMenuRequested);
 }
 
 ElaNavigationView::~ElaNavigationView()
@@ -91,7 +91,7 @@ void ElaNavigationView::onCustomContextMenuRequested(const QPoint& pos)
         QAction* openAction = menu.addElaIconAction(ElaIconType::ObjectGroup, "在新窗口中打开");
         connect(openAction, &QAction::triggered, this, [=]() {
             Q_EMIT navigationOpenNewWindow(posNode->getNodeKey());
-        });
+            });
         menu.exec(mapToGlobal(pos));
     }
 }

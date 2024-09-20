@@ -8,7 +8,7 @@
 #include "ElaTheme.h"
 ElaListViewStyle::ElaListViewStyle(QStyle* style)
 {
-    _pItemHeight = 35;
+    _pItemHeight = 40;
     _pIsTransparent = false;
     _themeMode = eTheme->getThemeMode();
     connect(eTheme, &ElaTheme::themeModeChanged, this, [=](ElaThemeType::ThemeMode themeMode) {
@@ -122,11 +122,46 @@ void ElaListViewStyle::drawControl(ControlElement element, const QStyleOption* o
             painter->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform | QPainter::TextAntialiasing);
             const ElaListView* listView = dynamic_cast<const ElaListView*>(widget);
             QListView::ViewMode viewMode = listView->viewMode();
-            // QRect checkRect = proxy()->subElementRect(SE_ItemViewItemCheckIndicator, vopt, widget);
+            QRect checkRect = proxy()->subElementRect(SE_ItemViewItemCheckIndicator, vopt, widget);
             QRect iconRect = proxy()->subElementRect(SE_ItemViewItemDecoration, vopt, widget);
             QRect textRect = proxy()->subElementRect(SE_ItemViewItemText, vopt, widget);
             iconRect.adjust(_leftPadding, 0, 0, 0);
             textRect.adjust(_leftPadding, 0, 0, 0);
+            checkRect.adjust(_leftCheckboxPadding, 0, _leftCheckboxPadding, 0);
+            // 复选框绘制
+            if (checkRect.isValid())
+            {
+                painter->save();
+                //图标绘制
+                painter->setPen(ElaThemeColor(_themeMode, WindowText));
+                if (vopt->checkState == Qt::Checked)
+                {
+                    painter->setPen(QPen(ElaThemeColor(_themeMode, CheckBoxCheckedBorder), 1.2));
+                    painter->setBrush(ElaThemeColor(_themeMode, CheckBoxCheckedBase));
+                    painter->drawRoundedRect(checkRect, 2, 2);
+                    QFont iconFont = QFont("ElaAwesome");
+                    iconFont.setPixelSize(checkRect.width() * 0.85);
+                    painter->setFont(iconFont);
+                    painter->setPen(ElaThemeColor(ElaThemeType::Dark, WindowText));
+                    painter->drawText(checkRect, Qt::AlignCenter, QChar((unsigned short)ElaIconType::Check));
+                }
+                else if (vopt->checkState == Qt::PartiallyChecked)
+                {
+                    painter->setPen(QPen(ElaThemeColor(_themeMode, CheckBoxCheckedBorder), 1.2));
+                    painter->setBrush(ElaThemeColor(_themeMode, CheckBoxCheckedBase));
+                    painter->drawRoundedRect(checkRect, 2, 2);
+                    painter->setPen(ElaThemeColor(ElaThemeType::Dark, WindowText));
+                    QLine checkLine(checkRect.x() + 3, checkRect.center().y(), checkRect.right() - 3, checkRect.center().y());
+                    painter->drawLine(checkLine);
+                }
+                else
+                {
+                    painter->setPen(QPen(ElaThemeColor(_themeMode, WindowText), 1.2));
+                    painter->setBrush(Qt::transparent);
+                    painter->drawRoundedRect(checkRect, 2, 2);
+                }
+                painter->restore();
+            }
             // 图标绘制
             if (!vopt->icon.isNull())
             {

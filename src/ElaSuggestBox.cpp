@@ -22,7 +22,7 @@
 Q_PROPERTY_CREATE_Q_CPP(ElaSuggestBox, int, BorderRadius)
 Q_PROPERTY_CREATE_Q_CPP(ElaSuggestBox, Qt::CaseSensitivity, CaseSensitivity)
 ElaSuggestBox::ElaSuggestBox(QWidget* parent)
-    : QWidget{parent}, d_ptr(new ElaSuggestBoxPrivate())
+    : QWidget{ parent }, d_ptr(new ElaSuggestBoxPrivate())
 {
     Q_D(ElaSuggestBox);
     setFixedSize(280, 35);
@@ -31,7 +31,7 @@ ElaSuggestBox::ElaSuggestBox(QWidget* parent)
     d->_pCaseSensitivity = Qt::CaseInsensitive;
     d->_searchEdit = new ElaLineEdit(this);
     d->_searchEdit->setFixedHeight(35);
-    d->_searchEdit->setPlaceholderText("查找功能");
+    d->_searchEdit->setPlaceholderText(tr("Search"));
     d->_searchEdit->setClearButtonEnabled(true);
     d->_lightSearchAction = new QAction(ElaIcon::getInstance()->getElaIcon(ElaIconType::MagnifyingGlass), "Search", this);
     d->_darkSearchAction = new QAction(ElaIcon::getInstance()->getElaIcon(ElaIconType::MagnifyingGlass, QColor(0xFF, 0xFF, 0xFF)), "Search", this);
@@ -49,11 +49,11 @@ ElaSuggestBox::ElaSuggestBox(QWidget* parent)
 
     connect(d->_lightSearchAction, &QAction::triggered, this, [=](bool checked) {
         //qDebug() << "Search";
-    });
+        });
 
     connect(d->_darkSearchAction, &QAction::triggered, this, [=](bool checked) {
         //qDebug() << "Search";
-    });
+        });
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     mainLayout->setSpacing(0);
     mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -76,7 +76,7 @@ ElaSuggestBox::ElaSuggestBox(QWidget* parent)
     // 焦点事件
     connect(d->_searchEdit, &ElaLineEdit::wmFocusOut, this, [d]() {
         d->_startCloseAnimation();
-    });
+        });
 }
 
 ElaSuggestBox::~ElaSuggestBox()
@@ -111,7 +111,7 @@ void ElaSuggestBox::addSuggestion(ElaIconType::IconName icon, const QString& sug
 void ElaSuggestBox::removeSuggestion(const QString& suggestText)
 {
     Q_D(ElaSuggestBox);
-    foreach (auto suggest, d->_suggestionVector)
+    foreach(auto suggest, d->_suggestionVector)
     {
         if (suggest->getSuggestText() == suggestText)
         {
