@@ -3,17 +3,23 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 
+#include "ElaCalendar.h"
+#include "ElaCalendarPicker.h"
 #include "ElaColorDialog.h"
 #include "ElaMenu.h"
 #include "ElaPushButton.h"
 #include "ElaScrollPageArea.h"
 #include "ElaText.h"
 #include "ElaToolButton.h"
+#include "qdatetime.h"
 T_Popup::T_Popup(QWidget* parent)
     : T_BasePage(parent)
 {
+    // 预览窗口标题
+    setWindowTitle("ElaPopup");
+
     // 顶部元素
-    QVBoxLayout* topLayout = createTopLayout("一些常用的弹出组件被放置于此，可在此界面体验其效果并按需添加进项目中");
+    createCustomWidget("一些常用的弹出组件被放置于此，可在此界面体验其效果并按需添加进项目中");
 
     QWidget* centralWidget = new QWidget(this);
     centralWidget->setWindowTitle("ElaPopup");
@@ -71,12 +77,23 @@ T_Popup::T_Popup(QWidget* parent)
     colorDialogLayout->addWidget(colorText);
     colorDialogLayout->addStretch();
 
+    _calendar = new ElaCalendar(this);
+
+    _calendarPicker = new ElaCalendarPicker(this);
+    ElaScrollPageArea* calendarPickerArea = new ElaScrollPageArea(this);
+    QHBoxLayout* calendarPickerLayout = new QHBoxLayout(calendarPickerArea);
+    ElaText* calendarPickerText = new ElaText("ElaCalendarPicker", this);
+    calendarPickerText->setTextPixelSize(15);
+    calendarPickerLayout->addWidget(calendarPickerText);
+    calendarPickerLayout->addWidget(_calendarPicker);
+    calendarPickerLayout->addStretch();
+
     QVBoxLayout* centerVLayout = new QVBoxLayout(centralWidget);
     centerVLayout->setContentsMargins(0, 0, 0, 0);
-    centerVLayout->addLayout(topLayout);
-    centerVLayout->addSpacing(5);
     centerVLayout->addWidget(toolButtonArea);
     centerVLayout->addWidget(colorDialogArea);
+    centerVLayout->addWidget(calendarPickerArea);
+    centerVLayout->addWidget(_calendar);
     centerVLayout->addStretch();
     addCentralWidget(centralWidget, true, false, 0);
 }

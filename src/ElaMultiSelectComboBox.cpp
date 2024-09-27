@@ -35,6 +35,8 @@ ElaMultiSelectComboBox::ElaMultiSelectComboBox(QWidget* parent)
     comboBoxView->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     ElaScrollBar* scrollBar = new ElaScrollBar(this);
     comboBoxView->setVerticalScrollBar(scrollBar);
+    ElaScrollBar* floatVScrollBar = new ElaScrollBar(scrollBar, comboBoxView);
+    floatVScrollBar->setIsAnimation(true);
     comboBoxView->setAutoScroll(false);
     comboBoxView->setSelectionMode(QAbstractItemView::NoSelection);
     comboBoxView->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -164,13 +166,17 @@ void ElaMultiSelectComboBox::paintEvent(QPaintEvent* e)
     QPainter painter(this);
     painter.save();
     painter.setRenderHints(QPainter::SmoothPixmapTransform | QPainter::Antialiasing | QPainter::TextAntialiasing);
-    painter.setPen(ElaThemeColor(d->_themeMode, ComboBoxBorder));
-    painter.setBrush(isEnabled() ? underMouse() ? ElaThemeColor(d->_themeMode, ComboBoxHover) : ElaThemeColor(d->_themeMode, ComboBoxBase) : Qt::transparent);
+    painter.setPen(ElaThemeColor(d->_themeMode, BasicBorder));
+    painter.setBrush(isEnabled() ? underMouse() ? ElaThemeColor(d->_themeMode, BasicHover) : ElaThemeColor(d->_themeMode, BasicBase) : Qt::transparent);
     QRect foregroundRect = rect();
     foregroundRect.adjust(6, 1, -6, -1);
     painter.drawRoundedRect(foregroundRect, d->_pBorderRadius, d->_pBorderRadius);
+    // 底边线绘制
+    painter.setPen(ElaThemeColor(d->_themeMode, BasicBaseLine));
+    painter.drawLine(foregroundRect.x() + d->_pBorderRadius, foregroundRect.y() + foregroundRect.height(), foregroundRect.x() + foregroundRect.width() - d->_pBorderRadius, foregroundRect.y() + foregroundRect.height());
+
     //文字绘制
-    painter.setPen(isEnabled() ? ElaThemeColor(d->_themeMode, WindowText) : ElaThemeColor(d->_themeMode, WindowTextDisable));
+    painter.setPen(isEnabled() ? ElaThemeColor(d->_themeMode, BasicText) : ElaThemeColor(d->_themeMode, BasicTextDisable));
     QString currentText = painter.fontMetrics().elidedText(d->_currentText, Qt::ElideRight, foregroundRect.width() - 27 - width() * 0.05);
     painter.drawText(15, height() / 2 + painter.fontMetrics().ascent() / 2 - 1, currentText);
     //展开指示器绘制
@@ -183,7 +189,7 @@ void ElaMultiSelectComboBox::paintEvent(QPaintEvent* e)
         QFont iconFont = QFont("ElaAwesome");
         iconFont.setPixelSize(17);
         painter.setFont(iconFont);
-        painter.setPen(isEnabled() ? ElaThemeColor(d->_themeMode, WindowText) : ElaThemeColor(d->_themeMode, WindowTextDisable));
+        painter.setPen(isEnabled() ? ElaThemeColor(d->_themeMode, BasicText) : ElaThemeColor(d->_themeMode, BasicTextDisable));
         QRectF expandIconRect(width() - 25, 0, 20, height());
         painter.translate(expandIconRect.x() + (qreal)expandIconRect.width() / 2 - 2, expandIconRect.y() + (qreal)expandIconRect.height() / 2);
         painter.rotate(d->_pExpandIconRotate);
@@ -295,6 +301,8 @@ void ElaMultiSelectComboBox::hidePopup()
                     layout->addWidget(view());
                     QMouseEvent focusEvent(QEvent::MouseButtonPress, QPoint(-1, -1), QPoint(-1, -1), Qt::NoButton, Qt::NoButton, Qt::NoModifier);
                     QApplication::sendEvent(parentWidget(), &focusEvent);
+                    QComboBox::hidePopup();
+                    container->setFixedHeight(containerHeight);
                 });
                 QPoint viewPos = view()->pos();
                 connect(viewPosAnimation, &QPropertyAnimation::finished, this, [=]() { view()->move(viewPos); });
@@ -304,10 +312,6 @@ void ElaMultiSelectComboBox::hidePopup()
                 viewPosAnimation->start(QAbstractAnimation::DeleteWhenStopped);
 
                 QPropertyAnimation* fixedSizeAnimation = new QPropertyAnimation(container, "maximumHeight");
-                connect(fixedSizeAnimation, &QPropertyAnimation::finished, this, [=]() {
-                    QComboBox::hidePopup();
-                    container->setFixedHeight(containerHeight);
-                });
                 connect(fixedSizeAnimation, &QPropertyAnimation::valueChanged, this, [=](const QVariant& value) {
                     container->setFixedHeight(value.toUInt());
                 });

@@ -6,7 +6,6 @@
 #include "Def.h"
 #include "stdafx.h"
 class ElaDockWidget;
-class QLinearGradient;
 class ElaDockWidgetTitleBar;
 class ElaDockWidgetPrivate : public QObject
 {
@@ -18,9 +17,11 @@ public:
     Q_SLOT void onThemeModeChanged(ElaThemeType::ThemeMode themeMode);
 
 private:
+    qint64 _currentWinID{0};
+    int _margins{8};
     ElaThemeType::ThemeMode _themeMode;
+    bool _isEnableMica;
     int _shadowBorderWidth{6};
-    QLinearGradient* _windowLinearGradient{nullptr};
     ElaDockWidgetTitleBar* _titleBar{nullptr};
 };
 

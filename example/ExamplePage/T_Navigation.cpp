@@ -13,8 +13,11 @@
 T_Navigation::T_Navigation(QWidget* parent)
     : T_BasePage(parent)
 {
+    // 预览窗口标题
+    setWindowTitle("ElaNavigation");
+
     // 顶部元素
-    QVBoxLayout* topLayout = createTopLayout("一些导航组件被放置于此，可在此界面体验其效果并按需添加进项目中");
+    createCustomWidget("一些导航组件被放置于此，可在此界面体验其效果并按需添加进项目中");
 
     //ElaBreadcrumbBar
     ElaText* breadcrumbBarText = new ElaText("ElaBreadcrumbBar", this);
@@ -48,12 +51,13 @@ T_Navigation::T_Navigation(QWidget* parent)
     pivotText->setTextPixelSize(18);
     _pivot = new ElaPivot(this);
     _pivot->setPivotSpacing(8);
-    _pivot->setMarkWidth(45);
+    _pivot->setMarkWidth(75);
     _pivot->appendPivot("本地歌曲");
     _pivot->appendPivot("下载歌曲");
     _pivot->appendPivot("下载视频");
     _pivot->appendPivot("正在下载");
     _pivot->setCurrentIndex(0);
+
     ElaScrollPageArea* pivotArea = new ElaScrollPageArea(this);
     QVBoxLayout* pivotLayout = new QVBoxLayout(pivotArea);
     pivotLayout->addWidget(_pivot);
@@ -85,8 +89,6 @@ T_Navigation::T_Navigation(QWidget* parent)
     centralWidget->setWindowTitle("ElaNavigation");
     QVBoxLayout* centerVLayout = new QVBoxLayout(centralWidget);
     centerVLayout->setContentsMargins(0, 0, 0, 0);
-    centerVLayout->addLayout(topLayout);
-    centerVLayout->addSpacing(5);
     centerVLayout->addLayout(breadcrumbBarTextLayout);
     centerVLayout->addSpacing(10);
     centerVLayout->addWidget(breadcrumbBarArea);
@@ -98,7 +100,7 @@ T_Navigation::T_Navigation(QWidget* parent)
     centerVLayout->addWidget(tabWidgetText);
     centerVLayout->addSpacing(10);
     centerVLayout->addWidget(_tabWidget);
-    addCentralWidget(centralWidget, true, true, 0);
+    addCentralWidget(centralWidget, true, false, 0);
 }
 
 T_Navigation::~T_Navigation()

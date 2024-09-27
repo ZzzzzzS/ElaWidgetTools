@@ -10,10 +10,10 @@
 ElaMenuStyle::ElaMenuStyle(QStyle* style)
 {
     _pMenuItemHeight = 32;
-    _windowLinearGradient = new QLinearGradient(0, 0, 100, 100);
     _themeMode = eTheme->getThemeMode();
-    onThemeChanged(eTheme->getThemeMode());
-    connect(eTheme, &ElaTheme::themeModeChanged, this, &ElaMenuStyle::onThemeChanged);
+    connect(eTheme, &ElaTheme::themeModeChanged, this, [=](ElaThemeType::ThemeMode themeMode) {
+        _themeMode = themeMode;
+    });
 }
 
 ElaMenuStyle::~ElaMenuStyle()
@@ -32,9 +32,8 @@ void ElaMenuStyle::drawPrimitive(PrimitiveElement element, const QStyleOption* o
         eTheme->drawEffectShadow(painter, option->rect, _shadowBorderWidth, 6);
         // 背景绘制
         QRect foregroundRect(_shadowBorderWidth, _shadowBorderWidth, option->rect.width() - 2 * _shadowBorderWidth, option->rect.height() - 2 * _shadowBorderWidth);
-        painter->setPen(ElaThemeColor(_themeMode, MenuBorder));
-        _windowLinearGradient->setFinalStop(foregroundRect.bottomRight());
-        painter->setBrush(*_windowLinearGradient);
+        painter->setPen(ElaThemeColor(_themeMode, PopupBorder));
+        painter->setBrush(ElaThemeColor(_themeMode, PopupBase));
         painter->drawRoundedRect(foregroundRect, 6, 6);
         painter->restore();
         return;
@@ -66,7 +65,7 @@ void ElaMenuStyle::drawControl(ControlElement element, const QStyleOption* optio
                 painter->save();
                 painter->setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
                 painter->setPen(Qt::NoPen);
-                painter->setBrush(ElaThemeColor(_themeMode, MenuSeparator));
+                painter->setBrush(ElaThemeColor(_themeMode, BasicBaseLine));
                 painter->drawRoundedRect(QRectF(separatorRect.x() + separatorRect.width() * 0.055, separatorRect.center().y(), separatorRect.width() - separatorRect.width() * 0.11, 1.5), 1, 1);
                 painter->restore();
                 return;
@@ -84,7 +83,7 @@ void ElaMenuStyle::drawControl(ControlElement element, const QStyleOption* optio
                     QRect hoverRect = menuRect;
                     hoverRect.adjust(0, 2, 0, -2);
                     painter->setPen(Qt::NoPen);
-                    painter->setBrush(ElaThemeColor(_themeMode, MenuHover));
+                    painter->setBrush(ElaThemeColor(_themeMode, PopupHover));
                     painter->drawRoundedRect(hoverRect, 5, 5);
                 }
                 //Icon绘制
@@ -103,31 +102,32 @@ void ElaMenuStyle::drawControl(ControlElement element, const QStyleOption* optio
                 }
                 else
                 {
-                    if (!menuIcon.isNull())
+                    QString iconText;
+                    const ElaMenu* menu = dynamic_cast<const ElaMenu*>(widget);
+                    if (menu)
                     {
-                        painter->drawPixmap(QRect(menuRect.x() + contentPadding, menuRect.center().y() - _iconWidth / 2, _iconWidth, _iconWidth), menuIcon.pixmap(_iconWidth, _iconWidth));
+                        QAction* action = menu->actionAt(menuRect.center());
+                        if (action)
+                        {
+                            iconText = action->property("ElaIconType").toString();
+                        }
+                    }
+                    if (!iconText.isEmpty())
+                    {
+                        painter->save();
+                        painter->setPen(!mopt->state.testFlag(QStyle::State_Enabled) ? Qt::gray : _themeMode == ElaThemeType::Light ? Qt::black
+                                                                                                                                    : Qt::white);
+                        QFont iconFont = QFont("ElaAwesome");
+                        iconFont.setPixelSize(_pMenuItemHeight * 0.57);
+                        painter->setFont(iconFont);
+                        painter->drawText(QRectF(menuRect.x() + contentPadding, menuRect.y(), _iconWidth, menuRect.height()), Qt::AlignCenter, iconText);
+                        painter->restore();
                     }
                     else
                     {
-                        const ElaMenu* menu = dynamic_cast<const ElaMenu*>(widget);
-                        if (menu)
+                        if (!menuIcon.isNull())
                         {
-                            QAction* action = menu->actionAt(menuRect.center());
-                            if (action)
-                            {
-                                QString iconText = action->property("ElaIconType").toString();
-                                if (!iconText.isEmpty())
-                                {
-                                    painter->save();
-                                    painter->setPen(!mopt->state.testFlag(QStyle::State_Enabled) ? Qt::gray : _themeMode == ElaThemeType::Light ? Qt::black
-                                                                                                                                                : Qt::white);
-                                    QFont iconFont = QFont("ElaAwesome");
-                                    iconFont.setPixelSize(_pMenuItemHeight * 0.57);
-                                    painter->setFont(iconFont);
-                                    painter->drawText(QRectF(menuRect.x() + contentPadding, menuRect.y(), _iconWidth, menuRect.height()), Qt::AlignCenter, iconText);
-                                    painter->restore();
-                                }
-                            }
+                            painter->drawPixmap(QRect(menuRect.x() + contentPadding, menuRect.center().y() - _iconWidth / 2, _iconWidth, _iconWidth), menuIcon.pixmap(_iconWidth, _iconWidth));
                         }
                     }
                 }
@@ -230,11 +230,4 @@ QSize ElaMenuStyle::sizeFromContents(ContentsType type, const QStyleOption* opti
     }
     }
     return QProxyStyle::sizeFromContents(type, option, size, widget);
-}
-
-void ElaMenuStyle::onThemeChanged(ElaThemeType::ThemeMode themeMode)
-{
-    _themeMode = themeMode;
-    _windowLinearGradient->setColorAt(0, ElaThemeColor(themeMode, MenuBaseStart));
-    _windowLinearGradient->setColorAt(1, ElaThemeColor(themeMode, MenuBaseEnd));
 }

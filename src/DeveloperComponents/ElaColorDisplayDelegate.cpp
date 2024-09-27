@@ -20,17 +20,17 @@ void ElaColorDisplayDelegate::paint(QPainter* painter, const QStyleOptionViewIte
 {
     painter->save();
     painter->setRenderHints(QPainter::Antialiasing);
-    QRect itemRect = option.rect;
+    QRectF itemRect = option.rect;
     // 颜色球绘制
     QColor displayColor = index.data(Qt::UserRole).value<QColor>();
     if (displayColor.isValid())
     {
-        painter->setPen(ElaThemeColor(_pThemeMode, ColorDialogDisplayBorder));
+        painter->setPen(ElaThemeColor(_pThemeMode, PopupBorderHover));
         painter->setBrush(index.data(Qt::UserRole).value<QColor>());
     }
     else
     {
-        QPen pen(ElaThemeColor(_pThemeMode, ColorDialogDisplayBorder));
+        QPen pen(ElaThemeColor(_pThemeMode, PopupBorderHover));
         pen.setStyle(Qt::DashLine);
         painter->setPen(pen);
     }

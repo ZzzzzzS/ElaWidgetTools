@@ -1,5 +1,6 @@
 #include "ElaScrollBar.h"
 
+#include <QDebug>
 #include <QPainter>
 #include <QPointer>
 #include <QPropertyAnimation>
@@ -9,7 +10,8 @@
 #include "ElaMenu.h"
 #include "ElaScrollBarStyle.h"
 #include "private/ElaScrollBarPrivate.h"
-Q_PROPERTY_CREATE_Q_CPP(ElaScrollBar, bool, isAnimation)
+Q_PROPERTY_CREATE_Q_CPP(ElaScrollBar, bool, IsAnimation)
+Q_PROPERTY_CREATE_Q_CPP(ElaScrollBar, qreal, SpeedLimit)
 ElaScrollBar::ElaScrollBar(QWidget* parent)
     : QScrollBar(parent), d_ptr(new ElaScrollBarPrivate())
 {
@@ -18,8 +20,9 @@ ElaScrollBar::ElaScrollBar(QWidget* parent)
     setSingleStep(1);
     setObjectName("ElaScrollBar");
     setAttribute(Qt::WA_OpaquePaintEvent, false);
+    d->_pSpeedLimit = 20;
     d->_pTargetMaximum = 0;
-    d->_pisAnimation = false;
+    d->_pIsAnimation = false;
     connect(this, &ElaScrollBar::rangeChanged, d, &ElaScrollBarPrivate::onRangeChanged);
     ElaScrollBarStyle* scrollBarStyle = new ElaScrollBarStyle(style());
     scrollBarStyle->setScrollBar(this);
@@ -41,6 +44,35 @@ ElaScrollBar::ElaScrollBar(Qt::Orientation orientation, QWidget* parent)
     : ElaScrollBar(parent)
 {
     setOrientation(orientation);
+}
+
+ElaScrollBar::ElaScrollBar(QScrollBar* originScrollBar, QAbstractScrollArea* parent)
+    : ElaScrollBar(parent)
+{
+    Q_D(ElaScrollBar);
+    if (!originScrollBar || !parent)
+    {
+        qCritical() << "Invalid origin or parent!";
+        return;
+    }
+    d->_originScrollArea = parent;
+    Qt::Orientation orientation = originScrollBar->orientation();
+    setOrientation(orientation);
+    orientation == Qt::Horizontal ? parent->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff) : parent->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    parent->installEventFilter(this);
+
+    d->_originScrollBar = originScrollBar;
+    d->_initAllConfig();
+
+    connect(d->_originScrollBar, &QScrollBar::valueChanged, this, [=](int value) {
+        d->_handleScrollBarValueChanged(this, value);
+    });
+    connect(this, &QScrollBar::valueChanged, this, [=](int value) {
+        d->_handleScrollBarValueChanged(d->_originScrollBar, value);
+    });
+    connect(d->_originScrollBar, &QScrollBar::rangeChanged, this, [=](int min, int max) {
+        d->_handleScrollBarRangeChanged(min, max);
+    });
 }
 
 ElaScrollBar::~ElaScrollBar()
@@ -78,6 +110,26 @@ bool ElaScrollBar::event(QEvent* event)
     return QScrollBar::event(event);
 }
 
+bool ElaScrollBar::eventFilter(QObject* watched, QEvent* event)
+{
+    Q_D(ElaScrollBar);
+    switch (event->type())
+    {
+    case QEvent::Show:
+    case QEvent::Resize:
+    case QEvent::LayoutRequest:
+    {
+        d->_handleScrollBarGeometry();
+        break;
+    }
+    default:
+    {
+        break;
+    }
+    }
+    return QScrollBar::eventFilter(watched, event);
+}
+
 void ElaScrollBar::mousePressEvent(QMouseEvent* event)
 {
     Q_D(ElaScrollBar);
@@ -105,7 +157,21 @@ void ElaScrollBar::mouseMoveEvent(QMouseEvent* event)
 void ElaScrollBar::wheelEvent(QWheelEvent* event)
 {
     Q_D(ElaScrollBar);
-    if (this->orientation() == Qt::Horizontal)
+    int verticalDelta = event->angleDelta().y();
+    if (d->_slideSmoothAnimation->state() == QAbstractAnimation::Stopped)
+    {
+        d->_scrollValue = value();
+    }
+    if (verticalDelta != 0)
+    {
+        if ((value() == minimum() && verticalDelta > 0) || (value() == maximum() && verticalDelta < 0))
+        {
+            QScrollBar::wheelEvent(event);
+            return;
+        }
+        d->_scroll(event->modifiers(), verticalDelta);
+    }
+    else
     {
         int horizontalDelta = event->angleDelta().x();
         if ((value() == minimum() && horizontalDelta > 0) || (value() == maximum() && horizontalDelta < 0))
@@ -113,27 +179,7 @@ void ElaScrollBar::wheelEvent(QWheelEvent* event)
             QScrollBar::wheelEvent(event);
             return;
         }
-        if (d->_lastHorizontalDeltaAngle != horizontalDelta || d->_scrollValue == -1)
-        {
-            d->_scrollValue = value();
-            d->_lastHorizontalDeltaAngle = horizontalDelta;
-        }
         d->_scroll(event->modifiers(), horizontalDelta);
-    }
-    else
-    {
-        int verticalDelta = event->angleDelta().y();
-        if ((value() == minimum() && verticalDelta > 0) || (value() == maximum() && verticalDelta < 0))
-        {
-            QScrollBar::wheelEvent(event);
-            return;
-        }
-        if (d->_lastVerticalDeltaAngle != verticalDelta || d->_scrollValue == -1)
-        {
-            d->_scrollValue = value();
-            d->_lastVerticalDeltaAngle = verticalDelta;
-        }
-        d->_scroll(event->modifiers(), verticalDelta);
     }
     event->accept();
 }

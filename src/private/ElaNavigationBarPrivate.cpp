@@ -3,7 +3,9 @@
 #include <QLayout>
 #include <QPropertyAnimation>
 
+#include "ElaApplication.h"
 #include "ElaBaseListView.h"
+#include "ElaCustomWidget.h"
 #include "ElaFooterDelegate.h"
 #include "ElaFooterModel.h"
 #include "ElaIconButton.h"
@@ -16,7 +18,8 @@
 #include "ElaNavigationView.h"
 #include "ElaSuggestBox.h"
 #include "ElaSuggestBoxPrivate.h"
-#include "ElaTheme.h"
+#include "ElaToolButton.h"
+
 ElaNavigationBarPrivate::ElaNavigationBarPrivate(QObject* parent)
     : QObject{parent}
 {
@@ -24,12 +27,6 @@ ElaNavigationBarPrivate::ElaNavigationBarPrivate(QObject* parent)
 
 ElaNavigationBarPrivate::~ElaNavigationBarPrivate()
 {
-}
-
-void ElaNavigationBarPrivate::onThemeChanged(ElaThemeType::ThemeMode themeMode)
-{
-    _windowLinearGradient->setColorAt(0, ElaThemeColor(themeMode, NavigationBaseStart));
-    _windowLinearGradient->setColorAt(1, ElaThemeColor(themeMode, NavigationBaseEnd));
 }
 
 void ElaNavigationBarPrivate::onNavigationButtonClicked()
@@ -47,6 +44,7 @@ void ElaNavigationBarPrivate::onNavigationButtonClicked()
 
 void ElaNavigationBarPrivate::onNavigationOpenNewWindow(QString nodeKey)
 {
+    Q_Q(ElaNavigationBar);
     const QMetaObject* meta = _pageMetaMap.value(nodeKey);
     if (!meta)
     {
@@ -55,9 +53,11 @@ void ElaNavigationBarPrivate::onNavigationOpenNewWindow(QString nodeKey)
     QWidget* widget = static_cast<QWidget*>(meta->newInstance());
     if (widget)
     {
-        widget->resize(600, 600);
-        widget->setAttribute(Qt::WA_DeleteOnClose);
-        widget->show();
+        ElaCustomWidget* floatWidget = new ElaCustomWidget(q);
+        floatWidget->setWindowIcon(widget->windowIcon());
+        floatWidget->setWindowTitle(widget->windowTitle());
+        floatWidget->setCentralWidget(widget);
+        floatWidget->show();
     }
 }
 
@@ -177,6 +177,12 @@ void ElaNavigationBarPrivate::onTreeViewClicked(const QModelIndex& index, bool i
                     }
                     else
                     {
+                        if (originNode == _navigationModel->getSelectedExpandedNode())
+                        {
+                            _navigationModel->setSelectedNode(node);
+                            _resetNodeSelected();
+                            return;
+                        }
                         _navigationModel->setSelectedExpandedNode(originNode);
                         postData.insert("SelectedNode", QVariant::fromValue(originNode));
                     }
@@ -467,7 +473,14 @@ void ElaNavigationBarPrivate::_handleMaximalToCompactLayout()
     {
         _navigationButtonLayout->takeAt(0);
     }
-    _navigationButtonLayout->addSpacing(76);
+    if (_isShowUserCard)
+    {
+        _navigationButtonLayout->addSpacing(76);
+    }
+    else
+    {
+        _navigationButtonLayout->addSpacing(40);
+    }
 
     _navigationSuggestLayout->addStretch();
 
@@ -492,7 +505,10 @@ void ElaNavigationBarPrivate::_handleCompactToMaximalLayout()
     {
         _userButtonLayout->takeAt(0);
     }
-    _userButtonLayout->addSpacing(74);
+    if (_isShowUserCard)
+    {
+        _userButtonLayout->addSpacing(74);
+    }
 }
 
 void ElaNavigationBarPrivate::_resetLayout()
@@ -551,10 +567,6 @@ void ElaNavigationBarPrivate::_doNavigationBarWidthAnimation(ElaNavigationType::
         });
         connect(navigationBarWidthAnimation, &QPropertyAnimation::valueChanged, this, [=](const QVariant& value) {
             q->setFixedWidth(value.toUInt());
-            if (q->width() > 260)
-            {
-                _navigationView->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-            }
         });
         navigationBarWidthAnimation->setEndValue(300);
         break;
@@ -572,10 +584,6 @@ void ElaNavigationBarPrivate::_doNavigationViewWidthAnimation(bool isAnimation)
     QPropertyAnimation* navigationViewWidthAnimation = new QPropertyAnimation(this, "pNavigationViewWidth");
     connect(navigationViewWidthAnimation, &QPropertyAnimation::valueChanged, this, [=](const QVariant& value) {
         _navigationView->setColumnWidth(0, value.toUInt());
-        if (_navigationView->width() < 260)
-        {
-            _navigationView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        }
     });
     navigationViewWidthAnimation->setEasingCurve(QEasingCurve::OutCubic);
     navigationViewWidthAnimation->setStartValue(_navigationView->columnWidth(0));

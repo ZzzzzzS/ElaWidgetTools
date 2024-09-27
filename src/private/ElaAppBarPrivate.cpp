@@ -1,4 +1,6 @@
 #include "ElaAppBarPrivate.h"
+
+#include "ElaToolButton.h"
 #ifdef Q_OS_WIN
 #include <Windows.h>
 #endif
@@ -46,7 +48,7 @@ void ElaAppBarPrivate::onCloseButtonClicked()
     Q_Q(ElaAppBar);
     if (_pIsDefaultClosed)
     {
-        q->closeWindow();
+        q->window()->close();
     }
     else
     {
@@ -56,27 +58,31 @@ void ElaAppBarPrivate::onCloseButtonClicked()
 
 void ElaAppBarPrivate::onStayTopButtonClicked()
 {
-    Q_Q(const ElaAppBar);
 #ifdef Q_OS_WIN
-    HWND hwnd = reinterpret_cast<HWND>(q->window()->winId());
-    _stayTopButton->setIsSelected(_pIsStayTop);
+    HWND hwnd = (HWND)_currentWinID;
     ::SetWindowPos(hwnd, _pIsStayTop ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 #else
+    Q_Q(const ElaAppBar);
+    bool isVisible = q->window()->isVisible();
     q->window()->setWindowFlag(Qt::WindowStaysOnTopHint, _pIsStayTop);
-    _stayTopButton->setIsSelected(_pIsStayTop);
-    q->window()->show();
+    if (isVisible)
+    {
+        q->window()->show();
+    }
 #endif
+    _stayTopButton->setIsSelected(_pIsStayTop);
+    _stayTopButton->update();
 }
 
 void ElaAppBarPrivate::_changeMaxButtonAwesome(bool isMaximized)
 {
     if (isMaximized)
     {
-        _maxButton->setAwesome(ElaIconType::WindowRestore);
+        _maxButton->setElaIcon(ElaIconType::WindowRestore);
     }
     else
     {
-        _maxButton->setAwesome(ElaIconType::Square);
+        _maxButton->setElaIcon(ElaIconType::Square);
     }
 }
 
@@ -194,11 +200,11 @@ void ElaAppBarPrivate::_onThemeModeChange(ElaThemeType::ThemeMode themeMode)
 {
     if (themeMode == ElaThemeType::Light)
     {
-        _themeChangeButton->setAwesome(ElaIconType::MoonStars);
+        _themeChangeButton->setElaIcon(ElaIconType::MoonStars);
     }
     else
     {
-        _themeChangeButton->setAwesome(ElaIconType::SunBright);
+        _themeChangeButton->setElaIcon(ElaIconType::SunBright);
     }
 }
 
@@ -209,12 +215,13 @@ int ElaAppBarPrivate::_calculateMinimumWidth()
     if (_titleLabel->isVisible())
     {
         width += _titleLabel->width();
+        width += 10;
     }
     if (_iconLabel->isVisible())
     {
         width += _iconLabel->width();
+        width += 10;
     }
-    width += 20;
     bool isHasNavigationBar = false;
     if (q->parentWidget()->findChild<ElaNavigationBar*>())
     {
@@ -227,7 +234,7 @@ int ElaAppBarPrivate::_calculateMinimumWidth()
     }
     if (_pCustomWidget)
     {
-        int customWidgetWidth = _pCustomWidget->minimumWidth();
+        int customWidgetWidth = _pCustomWidget->width();
         if (isHasNavigationBar)
         {
             if (customWidgetWidth > 300)
@@ -240,7 +247,7 @@ int ElaAppBarPrivate::_calculateMinimumWidth()
             width += customWidgetWidth;
         }
     }
-    QList<ElaIconButton*> buttonList = q->findChildren<ElaIconButton*>();
+    QList<QAbstractButton*> buttonList = q->findChildren<QAbstractButton*>();
     for (auto button : buttonList)
     {
         if (button->isVisible() && button->objectName() != "NavigationButton")

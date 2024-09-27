@@ -6,51 +6,45 @@
 #include <QScreen>
 #include <QVBoxLayout>
 
-#include "ElaAppBar.h"
+#include "ElaApplication.h"
 #include "ElaTheme.h"
 #include "private/ElaWidgetPrivate.h"
+Q_TAKEOVER_NATIVEEVENT_CPP(ElaWidget, d_func()->_appBar);
 ElaWidget::ElaWidget(QWidget* parent)
-    : QWidget{parent}, d_ptr(new ElaWidgetPrivate())
+    : QWidget{ parent }, d_ptr(new ElaWidgetPrivate())
 {
     Q_D(ElaWidget);
     d->q_ptr = this;
     resize(500, 500); // 默认宽高
     setWindowTitle("ElaWidget");
     setObjectName("ElaWidget");
-    setWindowModality(Qt::ApplicationModal);
-    d->_windowLinearGradient = new QLinearGradient(0, 0, width(), height());
-    d->_windowLinearGradient->setColorAt(0, ElaThemeColor(ElaThemeType::Light, WindowBaseStart));
-    d->_windowLinearGradient->setColorAt(1, ElaThemeColor(ElaThemeType::Light, WindowBaseEnd));
 
     // 自定义AppBar
     d->_appBar = new ElaAppBar(this);
-    d->_appBar->setIsStayTop(false);
-    d->_appBar->setWindowButtonFlags(ElaAppBarType::CloseButtonHint);
-    d->_appBar->setIsDefaultClosed(false);
-    connect(d->_appBar, &ElaAppBar::closeButtonClicked, this, [=]() {
-        close();
-    });
-    setAttribute(Qt::WA_DeleteOnClose);
-    connect(eTheme, &ElaTheme::themeModeChanged, d, &ElaWidgetPrivate::onThemeModeChanged);
-    d->onThemeModeChanged(eTheme->getThemeMode());
+    d->_appBar->setIsStayTop(true);
+    d->_appBar->setWindowButtonFlags(ElaAppBarType::StayTopButtonHint | ElaAppBarType::MinimizeButtonHint | ElaAppBarType::MaximizeButtonHint | ElaAppBarType::CloseButtonHint);
+    connect(d->_appBar, &ElaAppBar::routeBackButtonClicked, this, &ElaWidget::routeBackButtonClicked);
+    connect(d->_appBar, &ElaAppBar::navigationButtonClicked, this, &ElaWidget::navigationButtonClicked);
+    connect(d->_appBar, &ElaAppBar::themeChangeButtonClicked, this, &ElaWidget::themeChangeButtonClicked);
+    connect(d->_appBar, &ElaAppBar::closeButtonClicked, this, &ElaWidget::closeButtonClicked);
+
+    // 主题
+    d->_themeMode = eTheme->getThemeMode();
+    connect(eTheme, &ElaTheme::themeModeChanged, this, [=](ElaThemeType::ThemeMode themeMode) {
+        d->_themeMode = themeMode;
+        update();
+        });
+
+    d->_isEnableMica = eApp->getIsEnableMica();
+    connect(eApp, &ElaApplication::pIsEnableMicaChanged, this, [=]() {
+        d->_isEnableMica = eApp->getIsEnableMica();
+        update();
+        });
+    eApp->syncMica(this);
 }
 
 ElaWidget::~ElaWidget()
 {
-}
-
-void ElaWidget::moveToCenter()
-{
-    if (isMaximized() || isFullScreen())
-    {
-        return;
-    }
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-    auto geometry = screen()->availableGeometry();
-#else
-    auto geometry = qApp->screenAt(this->geometry().center())->geometry();
-#endif
-    setGeometry((geometry.left() + geometry.right() - width()) / 2, (geometry.top() + geometry.bottom() - height()) / 2, width(), height());
 }
 
 void ElaWidget::setIsStayTop(bool isStayTop)
@@ -75,6 +69,33 @@ bool ElaWidget::getIsFixedSize() const
     return d_ptr->_appBar->getIsFixedSize();
 }
 
+void ElaWidget::setIsDefaultClosed(bool isDefaultClosed)
+{
+    Q_D(ElaWidget);
+    d->_appBar->setIsDefaultClosed(isDefaultClosed);
+    Q_EMIT pIsDefaultClosedChanged();
+}
+
+bool ElaWidget::getIsDefaultClosed() const
+{
+    Q_D(const ElaWidget);
+    return d->_appBar->getIsDefaultClosed();
+}
+
+void ElaWidget::moveToCenter()
+{
+    if (isMaximized() || isFullScreen())
+    {
+        return;
+    }
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    auto geometry = screen()->availableGeometry();
+#else
+    auto geometry = qApp->screenAt(this->geometry().center())->geometry();
+#endif
+    setGeometry((geometry.left() + geometry.right() - width()) / 2, (geometry.top() + geometry.bottom() - height()) / 2, width(), height());
+}
+
 void ElaWidget::setWindowButtonFlag(ElaAppBarType::ButtonType buttonFlag, bool isEnable)
 {
     Q_D(ElaWidget);
@@ -95,13 +116,15 @@ ElaAppBarType::ButtonFlags ElaWidget::getWindowButtonFlags() const
 void ElaWidget::paintEvent(QPaintEvent* event)
 {
     Q_D(ElaWidget);
-    QPainter painter(this);
-    painter.save();
-    painter.setRenderHints(QPainter::SmoothPixmapTransform | QPainter::Antialiasing | QPainter::TextAntialiasing);
-    painter.setPen(Qt::NoPen);
-    d->_windowLinearGradient->setFinalStop(width(), height());
-    painter.setBrush(*d->_windowLinearGradient);
-    painter.drawRect(rect());
-    painter.restore();
+    if (!d->_isEnableMica)
+    {
+        QPainter painter(this);
+        painter.save();
+        painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(ElaThemeColor(d->_themeMode, WindowBase));
+        painter.drawRect(rect());
+        painter.restore();
+    }
     QWidget::paintEvent(event);
 }

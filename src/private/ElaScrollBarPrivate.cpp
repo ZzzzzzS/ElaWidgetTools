@@ -17,7 +17,7 @@ ElaScrollBarPrivate::~ElaScrollBarPrivate()
 void ElaScrollBarPrivate::onRangeChanged(int min, int max)
 {
     Q_Q(ElaScrollBar);
-    if (q->isVisible() && _pisAnimation && max != 0)
+    if (q->isVisible() && _pIsAnimation && max != 0)
     {
         QPropertyAnimation* rangeSmoothAnimation = new QPropertyAnimation(this, "pTargetMaximum");
         connect(rangeSmoothAnimation, &QPropertyAnimation::finished, this, [=]() {
@@ -60,6 +60,10 @@ void ElaScrollBarPrivate::_scroll(Qt::KeyboardModifiers modifiers, int delta)
     {
         stepsToScroll = QApplication::wheelScrollLines() * offset * singleStep;
     }
+    if (abs(_scrollValue - q->value()) > abs(stepsToScroll * _pSpeedLimit))
+    {
+        _scrollValue = q->value();
+    }
     _scrollValue -= stepsToScroll;
     _slideSmoothAnimation->stop();
     _slideSmoothAnimation->setStartValue(q->value());
@@ -95,4 +99,47 @@ int ElaScrollBarPrivate::_pixelPosToRangeValue(int pos) const
     }
     return QStyle::sliderValueFromPosition(q->minimum(), q->maximum(), pos - sliderMin,
                                            sliderMax - sliderMin, opt.upsideDown);
+}
+
+void ElaScrollBarPrivate::_initAllConfig()
+{
+    Q_Q(ElaScrollBar);
+    _handleScrollBarRangeChanged(_originScrollBar->minimum(), _originScrollBar->maximum());
+    q->setSingleStep(_originScrollBar->singleStep());
+    q->setPageStep(_originScrollBar->pageStep());
+}
+
+void ElaScrollBarPrivate::_handleScrollBarValueChanged(QScrollBar* scrollBar, int value)
+{
+    scrollBar->setValue(value);
+}
+
+void ElaScrollBarPrivate::_handleScrollBarRangeChanged(int min, int max)
+{
+    Q_Q(ElaScrollBar);
+    q->setRange(min, max);
+    if (max <= 0)
+    {
+        q->setVisible(false);
+    }
+    else
+    {
+        q->setVisible(true);
+    }
+}
+
+void ElaScrollBarPrivate::_handleScrollBarGeometry()
+{
+    Q_Q(ElaScrollBar);
+    q->raise();
+    q->setSingleStep(_originScrollBar->singleStep());
+    q->setPageStep(_originScrollBar->pageStep());
+    if (q->orientation() == Qt::Horizontal)
+    {
+        q->setGeometry(0, _originScrollArea->height() - 10, _originScrollArea->width(), 10);
+    }
+    else
+    {
+        q->setGeometry(_originScrollArea->width() - 10, 0, 10, _originScrollArea->height());
+    }
 }
