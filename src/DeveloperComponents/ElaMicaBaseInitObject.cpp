@@ -50,13 +50,15 @@ void ElaMicaBaseInitObject::onInitMicaBase(QImage img)
                 lightColor.setHsv(h, 11, 250);
             }
             lightColor = lightColor.toRgb();
-            if (v / 1.1 > 40)
+            if (v / 1.1 > 30)
             {
-                darkColor.setHsv(h, s / 2, (v / 1.1 + 40) / 2);
+                double v_ = (v / 1.1 + 30) / 3;
+                v_ = std::max(v_, 30.0);
+                darkColor.setHsv(h, s / 1, v_);
             }
             else
             {
-                darkColor.setHsv(h, s / 2, 40);
+                darkColor.setHsv(h, s / 1, 30);
             }
             darkColor = darkColor.toRgb();
             lightImage.setPixel(x, y, qRgb(lightColor.red(), lightColor.green(), lightColor.blue()));
@@ -65,7 +67,7 @@ void ElaMicaBaseInitObject::onInitMicaBase(QImage img)
     }
     _appPrivate->_lightBaseImage = lightImage.copy();
     _appPrivate->_darkBaseImage = darkImage.copy();
-    // _appPrivate->_lightBaseImage.save("light.png", "PNG");
-    // _appPrivate->_darkBaseImage.save("dark.png", "PNG");
+    _appPrivate->_lightBaseImage.save("light.png", "PNG");
+    _appPrivate->_darkBaseImage.save("dark.png", "PNG");
     Q_EMIT initFinished();
 }
