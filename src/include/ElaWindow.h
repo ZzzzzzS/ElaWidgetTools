@@ -25,6 +25,7 @@ public:
     ~ElaWindow();
 
     void moveToCenter();
+    void TriggerThemeChangeAnimation();
 
     void setCustomWidget(ElaAppBarType::CustomArea customArea, QWidget* customWidget);
     QWidget* getCustomWidget() const;

@@ -392,3 +392,9 @@ QMenu* ElaWindow::createPopupMenu()
     }
     return menu;
 }
+
+void ElaWindow::TriggerThemeChangeAnimation()
+{
+    Q_D(ElaWindow);
+    d->onThemeReadyChange();
+}

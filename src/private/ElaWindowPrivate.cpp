@@ -83,7 +83,7 @@ void ElaWindowPrivate::onThemeReadyChange()
     _appBar->setIsOnlyAllowMinAndClose(true);
     if (!_animationWidget)
     {
-        QPoint centerPos = q->mapFromGlobal(QCursor::pos());
+        QPoint centerPos = q->mapFromGlobal(QPoint(0,0));
         _animationWidget = new ElaThemeAnimationWidget(q);
         connect(_animationWidget, &ElaThemeAnimationWidget::animationFinished, this, [=]() {
             _appBar->setIsOnlyAllowMinAndClose(false);
