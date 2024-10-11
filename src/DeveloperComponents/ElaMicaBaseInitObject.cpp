@@ -5,7 +5,7 @@
 #include "ElaApplicationPrivate.h"
 #include "ElaExponentialBlur.h"
 ElaMicaBaseInitObject::ElaMicaBaseInitObject(ElaApplicationPrivate* appPrivate, QObject* parent)
-    : QObject{parent}
+    : QObject{ parent }
 {
     _appPrivate = appPrivate;
 }
@@ -54,11 +54,11 @@ void ElaMicaBaseInitObject::onInitMicaBase(QImage img)
             {
                 double v_ = (v / 1.1 + 30) / 3;
                 v_ = std::max(v_, 30.0);
-                darkColor.setHsv(h, s / 1, v_);
+                darkColor.setHsv(h, s / 1.5, v_);
             }
             else
             {
-                darkColor.setHsv(h, s / 1, 30);
+                darkColor.setHsv(h, s / 1.5, 30);
             }
             darkColor = darkColor.toRgb();
             lightImage.setPixel(x, y, qRgb(lightColor.red(), lightColor.green(), lightColor.blue()));
