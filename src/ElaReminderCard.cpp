@@ -89,10 +89,10 @@ void ElaReminderCard::paintEvent(QPaintEvent* event)
     }
 
     // 焦点圆型绘制
-    painter.save();
-    painter.setBrush(ElaThemeColor(d->_themeMode, PrimaryNormal));
-    painter.drawEllipse(QPointF(width * 0.95 + d->_shadowBorderWidth, height() * 0.25), height() / 17, height() / 17);
-    painter.restore();
+    // painter.save();
+    // painter.setBrush(ElaThemeColor(d->_themeMode, PrimaryNormal));
+    // painter.drawEllipse(QPointF(width * 0.95 + d->_shadowBorderWidth, height() * 0.25), height() / 17, height() / 17);
+    // painter.restore();
 
     // 文字绘制
     QFont font = this->font();
