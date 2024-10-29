@@ -6,21 +6,26 @@
 #include "stdafx.h"
 
 class ElaContentDialogPrivate;
+class ElaPushButton;
+class ElaText;
+
 class ELA_EXPORT ElaContentDialog : public QDialog
 {
     Q_OBJECT
     Q_Q_CREATE(ElaContentDialog)
 public:
-    explicit ElaContentDialog(QWidget* parent);
+    explicit ElaContentDialog(QWidget* parent,const QString& title=QString(),const QString& subtitle=QString());
     ~ElaContentDialog();
     Q_SLOT virtual void onLeftButtonClicked();
     Q_SLOT virtual void onMiddleButtonClicked();
     Q_SLOT virtual void onRightButtonClicked();
     void setCentralWidget(QWidget* centralWidget);
+    void setButtonNumber(size_t number);
+    void setTitleSubTitle(const QString& Title, const QString SubTitle);
 
-    void setLeftButtonText(QString text);
-    void setMiddleButtonText(QString text);
-    void setRightButtonText(QString text);
+    void setLeftButtonText(QString text, bool heightlight = false);
+    void setMiddleButtonText(QString text, bool heightlight = false);
+    void setRightButtonText(QString text, bool heightlight = false);
 Q_SIGNALS:
     Q_SIGNAL void leftButtonClicked();
     Q_SIGNAL void middleButtonClicked();
@@ -36,6 +41,11 @@ protected:
     virtual bool nativeEvent(const QByteArray& eventType, void* message, long* result) override;
 #endif
 #endif
+private:
+    void SetButtonHeightLight(ElaPushButton* button, bool heightlight);
+    bool CentralWidgetChanged;
+    ElaText* Title;
+    ElaText* SubTitle;
 };
 
 #endif // ELACONTENTDIALOG_H

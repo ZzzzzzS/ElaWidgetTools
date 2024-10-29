@@ -16,7 +16,7 @@
 #include "ElaWinShadowHelper.h"
 #include "private/ElaContentDialogPrivate.h"
 
-ElaContentDialog::ElaContentDialog(QWidget* parent)
+ElaContentDialog::ElaContentDialog(QWidget* parent, const QString& titleText, const QString& subtitleText)
     : QDialog{parent}, d_ptr(new ElaContentDialogPrivate())
 {
     Q_D(ElaContentDialog);
@@ -44,20 +44,22 @@ ElaContentDialog::ElaContentDialog(QWidget* parent)
         d->_maskWidget->doMaskAnimation(0);
         d->_doCloseAnimation();
     });
-    d->_leftButton->setMinimumSize(0, 0);
+    d->_leftButton->setMinimumSize(120, 0);
     d->_leftButton->setMaximumSize(QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX));
     d->_leftButton->setFixedHeight(38);
-    d->_leftButton->setBorderRadius(6);
+    d->_leftButton->setFixedWidth(120);
+    //d->_leftButton->setBorderRadius(6);
     d->_middleButton = new ElaPushButton("minimum", this);
     connect(d->_middleButton, &ElaPushButton::clicked, this, [=]() {
         Q_EMIT middleButtonClicked();
         onMiddleButtonClicked();
         d->_doCloseAnimation();
     });
-    d->_middleButton->setMinimumSize(0, 0);
+    d->_middleButton->setMinimumSize(120, 0);
     d->_middleButton->setMaximumSize(QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX));
     d->_middleButton->setFixedHeight(38);
-    d->_middleButton->setBorderRadius(6);
+    d->_middleButton->setFixedWidth(120);
+    //d->_middleButton->setBorderRadius(6);
     d->_rightButton = new ElaPushButton("exit", this);
     connect(d->_rightButton, &ElaPushButton::clicked, this, [=]() {
         Q_EMIT rightButtonClicked();
@@ -72,28 +74,40 @@ ElaContentDialog::ElaContentDialog(QWidget* parent)
     d->_rightButton->setDarkHoverColor(ElaThemeColor(ElaThemeType::Dark, PrimaryHover));
     d->_rightButton->setDarkPressColor(ElaThemeColor(ElaThemeType::Dark, PrimaryPress));
     d->_rightButton->setDarkTextColor(Qt::white);
-    d->_rightButton->setMinimumSize(0, 0);
+    d->_rightButton->setMinimumSize(120, 0);
     d->_rightButton->setMaximumSize(QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX));
     d->_rightButton->setFixedHeight(38);
-    d->_rightButton->setBorderRadius(6);
+    d->_rightButton->setFixedWidth(120);
+    //d->_rightButton->setBorderRadius(6);
 
     d->_centralWidget = new QWidget(this);
     QVBoxLayout* centralVLayout = new QVBoxLayout(d->_centralWidget);
     centralVLayout->setContentsMargins(15, 25, 15, 10);
-    ElaText* title = new ElaText("退出", this);
+    ElaText* title = new ElaText(titleText, this);
     title->setTextStyle(ElaTextType::Title);
-    ElaText* subTitle = new ElaText("确定要退出程序吗", this);
+    title->adjustSize();
+    title->setMinimumHeight(20);
+    title->setAlignment(Qt::AlignTop|Qt::AlignLeft);
+
+    ElaText* subTitle = new ElaText(subtitleText, this);
     subTitle->setTextStyle(ElaTextType::Body);
+    subTitle->adjustSize();
+    subTitle->setMinimumHeight(60);
     centralVLayout->addWidget(title);
     centralVLayout->addSpacing(2);
     centralVLayout->addWidget(subTitle);
     centralVLayout->addStretch();
+    this->Title = title;
+    this->SubTitle = subTitle;
+    this->CentralWidgetChanged = false;
 
     d->_mainLayout = new QVBoxLayout(this);
     d->_mainLayout->setContentsMargins(0, 0, 0, 0);
     d->_buttonWidget = new QWidget(this);
     d->_buttonWidget->setFixedHeight(60);
     QHBoxLayout* buttonLayout = new QHBoxLayout(d->_buttonWidget);
+    QSpacerItem* buttonSpacer = new QSpacerItem(10, 10, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    buttonLayout->addSpacerItem(buttonSpacer);
     buttonLayout->addWidget(d->_leftButton);
     buttonLayout->addWidget(d->_middleButton);
     buttonLayout->addWidget(d->_rightButton);
@@ -108,46 +122,116 @@ ElaContentDialog::~ElaContentDialog()
 {
     Q_D(ElaContentDialog);
     d->_maskWidget->deleteLater();
+    qDebug() << "good bye ela content";
 }
 
 void ElaContentDialog::onLeftButtonClicked()
 {
+    this->setResult(QDialog::DialogCode::Rejected);
 }
 
 void ElaContentDialog::onMiddleButtonClicked()
 {
+    this->setResult(QDialog::DialogCode::Rejected);
 }
 
 void ElaContentDialog::onRightButtonClicked()
 {
+    this->setResult(QDialog::DialogCode::Accepted);
 }
 
+void ElaContentDialog::setTitleSubTitle(const QString& TitleText, const QString SubTitleText)
+{
+    if (this->CentralWidgetChanged)
+        return;
+
+    this->Title->setText(TitleText);
+    this->SubTitle->setText(SubTitleText);
+    this->Title->adjustSize();
+    this->SubTitle->adjustSize();
+}
 void ElaContentDialog::setCentralWidget(QWidget* centralWidget)
 {
     Q_D(ElaContentDialog);
     d->_mainLayout->takeAt(0);
     d->_mainLayout->takeAt(0);
     delete d->_centralWidget;
+    this->CentralWidgetChanged = true;
     d->_mainLayout->addWidget(centralWidget);
     d->_mainLayout->addWidget(d->_buttonWidget);
 }
 
-void ElaContentDialog::setLeftButtonText(QString text)
+void ElaContentDialog::setButtonNumber(size_t number)
+{
+    Q_D(ElaContentDialog);
+    d->q_ptr = this;
+    switch (number)
+    {
+    case 1:
+        d->_leftButton->hide();
+        d->_middleButton->hide();
+        d->_rightButton->show();
+        break;
+    case 2:
+        d->_leftButton->hide();
+        d->_middleButton->show();
+        d->_rightButton->show();
+        break;
+    case 3:
+        d->_leftButton->show();
+        d->_middleButton->show();
+        d->_rightButton->show();
+        break;
+    default:
+        break;
+    }
+}
+
+void ElaContentDialog::setLeftButtonText(QString text, bool heightlight)
 {
     Q_D(ElaContentDialog);
     d->_leftButton->setText(text);
+    this->SetButtonHeightLight(d->_leftButton, heightlight);
 }
 
-void ElaContentDialog::setMiddleButtonText(QString text)
+void ElaContentDialog::setMiddleButtonText(QString text, bool heightlight)
 {
     Q_D(ElaContentDialog);
     d->_middleButton->setText(text);
+    this->SetButtonHeightLight(d->_middleButton, heightlight);
 }
 
-void ElaContentDialog::setRightButtonText(QString text)
+void ElaContentDialog::setRightButtonText(QString text, bool heightlight)
 {
     Q_D(ElaContentDialog);
     d->_rightButton->setText(text);
+    this->SetButtonHeightLight(d->_rightButton, heightlight);
+}
+
+void ElaContentDialog::SetButtonHeightLight(ElaPushButton* button, bool heightlight)
+{
+    if (heightlight)
+    {
+        button->setLightDefaultColor(ElaThemeColor(ElaThemeType::Light, PrimaryNormal));
+        button->setLightHoverColor(ElaThemeColor(ElaThemeType::Light, PrimaryHover));
+        button->setLightPressColor(ElaThemeColor(ElaThemeType::Light, PrimaryPress));
+        button->setLightTextColor(Qt::white);
+        button->setDarkDefaultColor(ElaThemeColor(ElaThemeType::Dark, PrimaryNormal));
+        button->setDarkHoverColor(ElaThemeColor(ElaThemeType::Dark, PrimaryHover));
+        button->setDarkPressColor(ElaThemeColor(ElaThemeType::Dark, PrimaryPress));
+        button->setDarkTextColor(Qt::white);
+    }
+    else
+    {
+        button->setLightDefaultColor(ElaThemeColor(ElaThemeType::Light, BasicBase));
+        button->setDarkDefaultColor(ElaThemeColor(ElaThemeType::Dark, BasicBase));
+        button->setLightHoverColor(ElaThemeColor(ElaThemeType::Light, BasicHover));
+        button->setDarkHoverColor(ElaThemeColor(ElaThemeType::Dark, BasicHover));
+        button->setLightPressColor(ElaThemeColor(ElaThemeType::Light, BasicPress));
+        button->setDarkPressColor(ElaThemeColor(ElaThemeType::Dark, BasicPress));
+        button->setLightTextColor(ElaThemeColor(ElaThemeType::Light, BasicText));
+        button->setDarkTextColor(ElaThemeColor(ElaThemeType::Dark, BasicText));
+    }
 }
 
 void ElaContentDialog::showEvent(QShowEvent* event)
@@ -264,3 +348,5 @@ bool ElaContentDialog::nativeEvent(const QByteArray& eventType, void* message, l
     return QDialog::nativeEvent(eventType, message, result);
 }
 #endif
+
+
