@@ -13,7 +13,8 @@ Q_PROPERTY_CREATE_Q_CPP(ElaPushButton, QColor, DarkHoverColor)
 Q_PROPERTY_CREATE_Q_CPP(ElaPushButton, QColor, LightPressColor)
 Q_PROPERTY_CREATE_Q_CPP(ElaPushButton, QColor, DarkPressColor)
 ElaPushButton::ElaPushButton(QWidget* parent)
-    : QPushButton(parent), d_ptr(new ElaPushButtonPrivate())
+    : QPushButton(parent), d_ptr(new ElaPushButtonPrivate()),
+	isTransparent_(false)
 {
     Q_D(ElaPushButton);
     d->q_ptr = this;
@@ -47,6 +48,28 @@ ElaPushButton::ElaPushButton(QString text, QWidget* parent)
 
 ElaPushButton::~ElaPushButton()
 {
+}
+
+void ElaPushButton::setTransparent(bool isTransparent)
+{
+	this->isTransparent_ = isTransparent;
+    this->setLightDefaultColor(QColor(0, 0, 0, 0));
+    this->setDarkDefaultColor(QColor(0, 0, 0, 0));
+
+    QColor hoverColor = QColor(200, 200, 200, 64);
+	this->setLightHoverColor(hoverColor);
+
+	hoverColor = ElaThemeColor(ElaThemeType::Dark, BasicHover);
+	hoverColor.setAlpha(64);
+	this->setDarkHoverColor(hoverColor);
+ 
+	QColor pressColor = QColor(180, 180, 180, 64);
+	this->setLightPressColor(pressColor);
+
+	pressColor = ElaThemeColor(ElaThemeType::Dark, BasicPress);
+	pressColor.setAlpha(64);
+	this->setDarkPressColor(pressColor);
+    this->update();
 }
 
 void ElaPushButton::setLightTextColor(QColor color)
@@ -93,24 +116,43 @@ void ElaPushButton::paintEvent(QPaintEvent* event)
     QPainter painter(this);
     painter.setRenderHints(QPainter::SmoothPixmapTransform | QPainter::Antialiasing | QPainter::TextAntialiasing);
     // 高性能阴影
-    eTheme->drawEffectShadow(&painter, rect(), d->_shadowBorderWidth, d->_pBorderRadius);
+    if(!this->isTransparent_)
+        eTheme->drawEffectShadow(&painter, rect(), d->_shadowBorderWidth, d->_pBorderRadius);
 
     // 背景绘制
     painter.save();
     QRect foregroundRect(d->_shadowBorderWidth, d->_shadowBorderWidth, width() - 2 * (d->_shadowBorderWidth), height() - 2 * d->_shadowBorderWidth);
-    if (d->_themeMode == ElaThemeType::Light)
+    
+    if (!this->isTransparent_)
     {
-        painter.setPen(ElaThemeColor(ElaThemeType::Light, BasicBorder));
-        painter.setBrush(isEnabled() ? d->_isPressed ? d->_pLightPressColor : (underMouse() ? d->_pLightHoverColor : d->_pLightDefaultColor) : ElaThemeColor(d->_themeMode, BasicDisable));
+        if (d->_themeMode == ElaThemeType::Light)
+        {
+            painter.setPen(ElaThemeColor(ElaThemeType::Light, BasicBorder));
+            painter.setBrush(isEnabled() ? d->_isPressed ? d->_pLightPressColor : (underMouse() ? d->_pLightHoverColor : d->_pLightDefaultColor) : ElaThemeColor(d->_themeMode, BasicDisable));
+        }
+        else
+        {
+            painter.setPen(Qt::NoPen);
+            painter.setBrush(isEnabled() ? d->_isPressed ? d->_pDarkPressColor : (underMouse() ? d->_pDarkHoverColor : d->_pDarkDefaultColor) : ElaThemeColor(d->_themeMode, BasicDisable));
+        }
     }
     else
     {
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(isEnabled() ? d->_isPressed ? d->_pDarkPressColor : (underMouse() ? d->_pDarkHoverColor : d->_pDarkDefaultColor) : ElaThemeColor(d->_themeMode, BasicDisable));
+        if (d->_themeMode == ElaThemeType::Light)
+        {
+            painter.setPen(Qt::NoPen);
+            painter.setBrush(d->_isPressed ? d->_pLightPressColor : (underMouse() ? d->_pLightHoverColor : d->_pLightDefaultColor) );
+        }
+        else
+        {
+            painter.setPen(Qt::NoPen);
+            painter.setBrush(d->_isPressed ? d->_pDarkPressColor : (underMouse() ? d->_pDarkHoverColor : d->_pDarkDefaultColor));
+        }
     }
+    
     painter.drawRoundedRect(foregroundRect, d->_pBorderRadius, d->_pBorderRadius);
     // 底边线绘制
-    if (!d->_isPressed)
+    if (!d->_isPressed && !this->isTransparent_)
     {
         painter.setPen(ElaThemeColor(d->_themeMode, BasicBaseLine));
         painter.drawLine(foregroundRect.x() + d->_pBorderRadius, height() - d->_shadowBorderWidth, foregroundRect.width(), height() - d->_shadowBorderWidth);

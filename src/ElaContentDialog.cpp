@@ -21,10 +21,17 @@ ElaContentDialog::ElaContentDialog(QWidget* parent, const QString& titleText, co
 {
     Q_D(ElaContentDialog);
     d->q_ptr = this;
-
-    d->_maskWidget = new ElaMaskWidget(parent);
+    
+	QWidget* parentWidget = parent;
+    while (parentWidget->parentWidget())
+    {
+		parentWidget = parentWidget->parentWidget();
+    }
+    this->RootWidget = parentWidget;
+    d->_maskWidget = new ElaMaskWidget(parentWidget);
     d->_maskWidget->move(0, 0);
-    d->_maskWidget->setFixedSize(parent->size());
+	qDebug() << parentWidget->size();
+    d->_maskWidget->setFixedSize(parentWidget->size());
     d->_maskWidget->setVisible(false);
 
     resize(400, height());
@@ -239,7 +246,7 @@ void ElaContentDialog::showEvent(QShowEvent* event)
     Q_D(ElaContentDialog);
     d->_maskWidget->setVisible(true);
     d->_maskWidget->raise();
-    d->_maskWidget->setFixedSize(parentWidget()->size());
+    d->_maskWidget->setFixedSize(this->RootWidget->size());
     d->_maskWidget->doMaskAnimation(90);
 #ifdef Q_OS_WIN
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 5, 3) && QT_VERSION <= QT_VERSION_CHECK(6, 6, 1))

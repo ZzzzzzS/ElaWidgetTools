@@ -46,6 +46,7 @@ private:
     bool CentralWidgetChanged;
     ElaText* Title;
     ElaText* SubTitle;
+    QWidget* RootWidget;
 };
 
 #endif // ELACONTENTDIALOG_H

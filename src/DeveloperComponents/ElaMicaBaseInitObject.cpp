@@ -67,7 +67,7 @@ void ElaMicaBaseInitObject::onInitMicaBase(QImage img)
     }
     _appPrivate->_lightBaseImage = lightImage.copy();
     _appPrivate->_darkBaseImage = darkImage.copy();
-    _appPrivate->_lightBaseImage.save("light.png", "PNG");
-    _appPrivate->_darkBaseImage.save("dark.png", "PNG");
+    //_appPrivate->_lightBaseImage.save("light.png", "PNG");
+    //_appPrivate->_darkBaseImage.save("dark.png", "PNG");
     Q_EMIT initFinished();
 }

@@ -9,9 +9,9 @@ ElaTreeView::ElaTreeView(QWidget* parent)
     Q_D(ElaTreeView);
     d->q_ptr = this;
     setObjectName("ElaTreeView");
-    setStyleSheet(
-        "#ElaTreeView{background-color:transparent;}"
-        "QHeaderView{background-color:transparent;border:0px;}");
+    //setStyleSheet(
+    //    "#ElaTreeView{background-color:transparent;}"
+    //    "QHeaderView{background-color:transparent;border:0px;}");
 
     setAnimated(true);
     setMouseTracking(true);

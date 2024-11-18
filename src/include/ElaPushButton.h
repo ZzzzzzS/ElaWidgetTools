@@ -27,10 +27,15 @@ public:
     void setDarkTextColor(QColor color);
     QColor getDarkTextColor() const;
 
+	void setTransparent(bool isTransparent);
+
 protected:
     virtual void mousePressEvent(QMouseEvent* event) override;
     virtual void mouseReleaseEvent(QMouseEvent* event) override;
     virtual void paintEvent(QPaintEvent* event) override;
+
+private:
+	bool isTransparent_;
 };
 
 #endif // ELAPUSHBUTTON_H
