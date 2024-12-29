@@ -17,20 +17,20 @@
 #include "private/ElaContentDialogPrivate.h"
 
 ElaContentDialog::ElaContentDialog(QWidget* parent, const QString& titleText, const QString& subtitleText)
-    : QDialog{parent}, d_ptr(new ElaContentDialogPrivate())
+    : QDialog{ parent }, d_ptr(new ElaContentDialogPrivate())
 {
     Q_D(ElaContentDialog);
     d->q_ptr = this;
-    
-	QWidget* parentWidget = parent;
+
+    QWidget* parentWidget = parent;
     while (parentWidget->parentWidget())
     {
-		parentWidget = parentWidget->parentWidget();
+        parentWidget = parentWidget->parentWidget();
     }
     this->RootWidget = parentWidget;
     d->_maskWidget = new ElaMaskWidget(parentWidget);
     d->_maskWidget->move(0, 0);
-	qDebug() << parentWidget->size();
+    qDebug() << parentWidget->size();
     d->_maskWidget->setFixedSize(parentWidget->size());
     d->_maskWidget->setVisible(false);
 
@@ -44,13 +44,13 @@ ElaContentDialog::ElaContentDialog(QWidget* parent, const QString& titleText, co
 #else
     window()->setWindowFlags((window()->windowFlags()) | Qt::FramelessWindowHint);
 #endif
-    d->_leftButton = new ElaPushButton("cancel", this);
+    d->_leftButton = new ElaPushButton("Cancel", this);
     connect(d->_leftButton, &ElaPushButton::clicked, this, [=]() {
         Q_EMIT leftButtonClicked();
         onLeftButtonClicked();
         d->_maskWidget->doMaskAnimation(0);
         d->_doCloseAnimation();
-    });
+        });
     d->_leftButton->setMinimumSize(120, 0);
     d->_leftButton->setMaximumSize(QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX));
     d->_leftButton->setFixedHeight(38);
@@ -61,7 +61,7 @@ ElaContentDialog::ElaContentDialog(QWidget* parent, const QString& titleText, co
         Q_EMIT middleButtonClicked();
         onMiddleButtonClicked();
         d->_doCloseAnimation();
-    });
+        });
     d->_middleButton->setMinimumSize(120, 0);
     d->_middleButton->setMaximumSize(QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX));
     d->_middleButton->setFixedHeight(38);
@@ -72,7 +72,7 @@ ElaContentDialog::ElaContentDialog(QWidget* parent, const QString& titleText, co
         Q_EMIT rightButtonClicked();
         onRightButtonClicked();
         d->_doCloseAnimation();
-    });
+        });
     d->_rightButton->setLightDefaultColor(ElaThemeColor(ElaThemeType::Light, PrimaryNormal));
     d->_rightButton->setLightHoverColor(ElaThemeColor(ElaThemeType::Light, PrimaryHover));
     d->_rightButton->setLightPressColor(ElaThemeColor(ElaThemeType::Light, PrimaryPress));
@@ -94,7 +94,7 @@ ElaContentDialog::ElaContentDialog(QWidget* parent, const QString& titleText, co
     title->setTextStyle(ElaTextType::Title);
     title->adjustSize();
     title->setMinimumHeight(20);
-    title->setAlignment(Qt::AlignTop|Qt::AlignLeft);
+    title->setAlignment(Qt::AlignTop | Qt::AlignLeft);
 
     ElaText* subTitle = new ElaText(subtitleText, this);
     subTitle->setTextStyle(ElaTextType::Body);
