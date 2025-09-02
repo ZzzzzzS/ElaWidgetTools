@@ -26,8 +26,9 @@ ElaInteractiveCard::ElaInteractiveCard(QWidget* parent)
     setMinimumSize(270, 80);
     d->_pCardPixmapSize = QSize(64, 64);
     d->_pTitleSpacing = 2;
-    d->_pCardPixmapBorderRadius = 6;
-    d->_pCardPixMode = ElaCardPixType::PixMode::Ellipse;
+    d->_pCardPixmapBorderRadius = 5;
+    //d->_pCardPixMode = ElaCardPixType::PixMode::Ellipse;
+    d->_pCardPixMode = ElaCardPixType::PixMode::RoundedRect;
     d->_themeMode = eTheme->getThemeMode();
     setMouseTracking(true);
     connect(eTheme, &ElaTheme::themeModeChanged, this, [=](ElaThemeType::ThemeMode themeMode) { d->_themeMode = themeMode; });
