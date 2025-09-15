@@ -129,7 +129,6 @@ ElaContentDialog::~ElaContentDialog()
 {
     Q_D(ElaContentDialog);
     d->_maskWidget->deleteLater();
-    qDebug() << "good bye ela content";
 }
 
 void ElaContentDialog::onLeftButtonClicked()
@@ -257,7 +256,7 @@ void ElaContentDialog::showEvent(QShowEvent* event)
     if (!hasCaption)
     {
         ::SetWindowLongPtr(hwnd, GWL_STYLE, style | WS_CAPTION);
-    }
+}
 #endif
 #endif
     QDialog::showEvent(event);
