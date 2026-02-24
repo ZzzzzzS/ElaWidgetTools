@@ -6,13 +6,13 @@
 #include "ElaTheme.h"
 #include "private/ElaScrollPageAreaPrivate.h"
 Q_PROPERTY_CREATE_Q_CPP(ElaScrollPageArea, int, BorderRadius)
-ElaScrollPageArea::ElaScrollPageArea(QWidget* parent)
-    : QWidget{parent}, d_ptr(new ElaScrollPageAreaPrivate())
+ElaScrollPageArea::ElaScrollPageArea(QWidget* parent, int height)
+    : QWidget{ parent }, d_ptr(new ElaScrollPageAreaPrivate())
 {
     Q_D(ElaScrollPageArea);
     d->q_ptr = this;
     d->_pBorderRadius = 6;
-    setFixedHeight(75);
+    setFixedHeight(height);
     d->_themeMode = eTheme->getThemeMode();
     connect(eTheme, &ElaTheme::themeModeChanged, this, [=](ElaThemeType::ThemeMode themeMode) { d->_themeMode = themeMode; });
 }
